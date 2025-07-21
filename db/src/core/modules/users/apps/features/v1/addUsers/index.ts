@@ -16,7 +16,7 @@ export class AddUsersDbService extends AddService<UserEntity>{
 
 //#endregion
 
-//#region Add Communication
+//#region Add User Communication
 @sealed
 @Service()
 export class AddUserCommunicationDbService extends AddService<UserCommunicationEntity>{
@@ -26,7 +26,7 @@ export class AddUserCommunicationDbService extends AddService<UserCommunicationE
 }
 //#region
 
-// #region Add Credentials
+// #region Add User Credentials
 @sealed
 @Service()
 export class AddUserCredentialsDbService extends AddService<UserCredentialsEntity>{
