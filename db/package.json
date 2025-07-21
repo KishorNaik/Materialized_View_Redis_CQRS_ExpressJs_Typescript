@@ -1,0 +1,78 @@
+{
+	"name": "@kishornaik/db",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/core/index.js",
+	"type": "commonjs",
+	"scripts": {
+		"start": "cross-env NODE_ENV=production node dist/core/index.js",
+		"start:build": "npm run clean && npx tsc && tsc-alias && swc src -d dist --source-maps --copy-files",
+		"start:dev": "cross-env NODE_ENV=development node dist/core/index.js",
+		"start:local": "npm run build && cross-env NODE_ENV=development node dist/core/index.js",
+		"build:dev": "npm run clean && npm run build:tsc && npm run prettier && swc src -d dist --source-maps --copy-files",
+		"build": "npm run clean && npm run build:tsc && npm run prettier && swc src -d dist --source-maps --copy-files",
+		"build:tsc": "tsc -p tsconfig.build.json",
+		"build:watch": "tsc -w -p tsconfig.build.json",
+		"lint": "eslint . --ext .ts --ext .mts",
+		"test": "glob -c \"node --trace-deprecation --no-warnings --test --require ts-node/register -r tsconfig-paths/register\" \"./src/test/**/*.test.ts\"",
+		"prettier": "npx prettier --config .prettierrc --write .",
+		"test:watch": "jest --watch",
+		"clean": "rimraf dist",
+		"prepublishOnly": "npm run build:tsc && npm run build && standard-version && git push --follow-tags",
+		"publish-only": "npm run prepublishOnly && npm publish --ignore-scripts",
+		"typeorm:generate": "npx typeorm-ts-node-commonjs migration:generate -d src/core/config/dbMigrations/index.ts src/core/config/dbMigrations/migrations/init",
+		"typeorm:migrate": "npx typeorm-ts-node-commonjs migration:run -d src/core/config/dbMigrations/index.ts",
+		"typeorm:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/core/config/dbMigrations/index.ts",
+		"prepare": "husky",
+		"npm:outdated": "npm outdated",
+		"npm:latest-package-update": "npx npm-check-updates -u"
+	},
+	"author": "",
+	"license": "ISC",
+	"engines": {
+		"node": ">= 14 <= 22"
+	},
+	"devDependencies": {
+		"@faker-js/faker": "^9.6.0",
+		"@swc/cli": "^0.7.7",
+		"@swc/core": "^1.11.29",
+		"@types/autocannon": "^7.12.7",
+		"@types/bcrypt": "^5.0.2",
+		"@types/glob": "^8.1.0",
+		"@types/ioredis": "^4.28.10",
+		"@types/node": "^22.15.21",
+		"@types/sinon": "^17.0.4",
+		"autocannon": "^8.0.0",
+		"cross-env": "^7.0.3",
+		"expect": "^29.7.0",
+		"glob": "^11.0.2",
+		"husky": "^9.1.7",
+		"prettier": "^3.5.3",
+		"rimraf": "^6.0.1",
+		"sinon": "^20.0.0",
+		"standard-version": "^9.5.0",
+		"ts-api-utils": "^2.0.1",
+		"ts-node": "^10.9.2",
+		"ts-node-dev": "^2.0.0",
+		"tsconfig-paths": "^4.2.0",
+		"typeorm": "^0.3.25",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"class-transformer": "^0.5.1",
+		"class-validator": "^0.14.2",
+		"class-validator-jsonschema": "^5.0.2",
+		"dotenv": "^16.5.0",
+		"envalid": "^8.0.0",
+		"pg": "^8.14.0",
+		"reflect-metadata": "^0.2.2",
+		"winston": "^3.17.0",
+		"winston-daily-rotate-file": "^5.0.0"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"files": [
+		"dist"
+	]
+}

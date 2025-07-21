@@ -1,0 +1,32 @@
+{
+    "name": "Node",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "debug.node.autoAttach": "smart",
+                "editor.formatOnSave": true,
+                "javascript.preferences.importModuleSpecifier": "relative",
+                "typescript.preferences.importModuleSpecifier": "relative"
+            },
+            "extensions": [
+                "formulahendry.auto-close-tag",
+                "formulahendry.auto-rename-tag",
+                "aaron-bond.better-comments",
+                "alefragnani.Bookmarks",
+                "usernamehw.errorlens",
+                "GitHub.remotehub",
+                "alefragnani.project-manager",
+                "wayou.vscode-todo-highlight"
+            ]
+        }
+    },
+    "forwardPorts": [
+        3000,
+        3001,
+        9229
+    ],
+    "remoteUser": "root",
+    "postCreateCommand": "sudo apt-get update && apt-get install -y curl"
+}
