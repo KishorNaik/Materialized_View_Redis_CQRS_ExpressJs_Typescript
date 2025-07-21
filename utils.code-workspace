@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "Materialized_View_Redis_CQRS_ExpressJs_Typescript",
+			"path": "."
+		},
+		{
+			"name": "utils",
+			"path": "utils"
+		},
+		{
+			"name": "db",
+			"path": "db"
+		},
+		{
+			"name": "api",
+			"path": "api"
+		}
+	]
+}

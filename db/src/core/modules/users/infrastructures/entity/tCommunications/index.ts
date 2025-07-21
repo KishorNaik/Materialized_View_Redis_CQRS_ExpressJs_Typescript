@@ -1,6 +1,7 @@
-import { BaseEntity, Column, Entity, Index, IsSafeString, JoinColumn, OneToOne, ViewColumn} from "@kishornaik/utils";
+import { Column, Entity, Index, IsSafeString, JoinColumn, OneToOne, ViewColumn} from "@kishornaik/utils";
 import { UserEntity } from "../tUsers";
 import { IsEmail, IsMobilePhone, IsNotEmpty } from 'class-validator';
+import { BaseEntity } from "../../../../../shared/entity/base";
 @Entity({schema:"user",name:"usersCommunication"})
 export class UserCommunicationEntity extends BaseEntity{
 
