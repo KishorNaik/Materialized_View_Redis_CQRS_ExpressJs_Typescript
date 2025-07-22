@@ -4,7 +4,7 @@ import { BaseEntity } from "../../../../../shared/entity/base";
 import { UserEntity } from "../tUsers";
 import { IsEmail, IsNotEmpty } from "class-validator";
 
-@Entity({schema:`user`,name:`userCredentials`})
+@Entity({schema:`user`,name:`usersCredentials`})
 export class UserCredentialsEntity extends BaseEntity{
 
   @Column(`varchar`,{length:100, nullable:false})

@@ -18,7 +18,7 @@ export class UsersSettingsEntity extends BaseEntity{
   @Column(`enum`,{enum:BoolEnum,default:BoolEnum.NO})
   public isEmailVerified?: BoolEnum;
 
-    @Column(`enum`,{enum:BoolEnum,default:BoolEnum.NO})
+  @Column(`enum`,{enum:BoolEnum,default:BoolEnum.NO})
   public isVerificationEmailSent?:BoolEnum;
 
   @Column(`enum`,{enum:BoolEnum,default:BoolEnum.NO})
