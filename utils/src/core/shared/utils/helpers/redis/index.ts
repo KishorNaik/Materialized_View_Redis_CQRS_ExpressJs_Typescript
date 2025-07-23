@@ -145,7 +145,7 @@ export const getIORedisConnection = (): ConnectionOptions => {
 export interface IRedisStoreWrapperParameters<TParams> {
 	key: string;
 	env: 'production' | 'dev';
-  setParams:TParams;
+	setParams: TParams;
 }
 
 export type RowVersionNumber = number;
@@ -153,7 +153,7 @@ export type RowVersionNumber = number;
 export interface IRedisStoreWrapper<TParams extends object, TResult extends object>
 	extends IServiceHandlerAsync<IRedisStoreWrapperParameters<TParams>, TResult> {}
 
-export abstract class RedisStoreWrapper<TParams extends object,TResult extends object>
+export abstract class RedisStoreWrapper<TParams extends object, TResult extends object>
 	implements IRedisStoreWrapper<TParams, TResult>
 {
 	private readonly _redisHelper: RedisHelper;
@@ -164,7 +164,10 @@ export abstract class RedisStoreWrapper<TParams extends object,TResult extends o
 		this._logger = logger;
 	}
 
-	private async setCacheAsync(key: string,params:TParams): Promise<Result<TResult, ResultError>> {
+	private async setCacheAsync(
+		key: string,
+		params: TParams
+	): Promise<Result<TResult, ResultError>> {
 		let result: TResult;
 		return tryCatchResultAsync(async () => {
 			// Check if setCacheDataAsync function implement or not
@@ -327,9 +330,10 @@ export abstract class RedisStoreWrapper<TParams extends object,TResult extends o
 		}
 	}
 
-	protected abstract setCacheDataAsync(params:TParams): Promise<Result<TResult, ResultError>>;
+	protected abstract setCacheDataAsync(params: TParams): Promise<Result<TResult, ResultError>>;
 
-	protected abstract setRowVersionAsync(params:TParams): Promise<Result<RowVersionNumber, ResultError>>;
+	protected abstract setRowVersionAsync(
+		params: TParams
+	): Promise<Result<RowVersionNumber, ResultError>>;
 }
 // #endregion
-

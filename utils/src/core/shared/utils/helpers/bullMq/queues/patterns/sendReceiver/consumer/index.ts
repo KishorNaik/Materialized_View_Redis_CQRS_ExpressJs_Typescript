@@ -22,7 +22,7 @@ export class SenderReceiverConsumerBullMq {
 					connection: this._connection,
 					removeOnFail: { count: 0 },
 					lockDuration: 20 * 60 * 1000,
-          concurrency:10
+					concurrency: 10,
 				});
 				return resolve(worker);
 			} catch (ex) {

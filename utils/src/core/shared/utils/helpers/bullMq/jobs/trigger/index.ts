@@ -46,7 +46,7 @@ export class TriggerJobBullMq {
 			jobId: jobId ?? randomUUID(),
 			delay: delay ?? 1000,
 			priority: priority ?? undefined,
-      removeOnComplete:true,
+			removeOnComplete: true,
 			...(repeat && {
 				repeat: {
 					pattern: repeat.cornPattern,

@@ -38,3 +38,5 @@ export * from '../../shared/utils/miscellaneous/voidResult/index';
 export * from '../../shared/utils/miscellaneous/jobs/index';
 export * from '../../shared/utils/helpers/thread/index';
 export * from '../../shared/utils/miscellaneous/batchArray/index';
+export * from '../../shared/utils/miscellaneous/retry/index';
+export * from '../../shared/utils/miscellaneous/transactions/index';
