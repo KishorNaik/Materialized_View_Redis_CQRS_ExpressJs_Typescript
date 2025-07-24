@@ -6,12 +6,10 @@ import {
 	WorkerPusher,
 	WorkerRabbitMq,
 } from '@kishornaik/utils';
-import { userBullMqWorkerModules, userModules } from './domain/users/users.Module';
-import { orderBullMqWorkerModules, orderModules } from './domain/orders/orders.Module';
-import { dashboardModules } from './bff/dashboards/dashboard.Module';
+import { userModules } from './users/users.Module';
 
 // REST API
-const restApiModulesFederation: Function[] = [...userModules, ...orderModules, ...dashboardModules];
+const restApiModulesFederation: Function[] = [...userModules];
 
 // TRPC
 const trpcModulesFederation = mergeRouters();
@@ -19,10 +17,7 @@ type TRPCAppRouter = typeof trpcModulesFederation;
 
 // Workers
 const cronJobWorkerModules: WorkerCronJob[] = [];
-const bullMqWorkerModules: WorkerBullMq[] = [
-	...userBullMqWorkerModules,
-	...orderBullMqWorkerModules,
-];
+const bullMqWorkerModules: WorkerBullMq[] = [];
 const pusherWorkerModules: WorkerPusher[] = [];
 const rabbitMqWorkerModules: WorkerRabbitMq[] = [];
 const kafkaWorkerModules: WorkerKafka[] = [];

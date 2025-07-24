@@ -3,7 +3,7 @@ import { ResultError } from '../../exceptions/results';
 import { ResultFactory } from '../response';
 import { StatusCodes } from 'http-status-codes';
 
-export namespace Retry {
+export namespace RetryWrapper {
 	export interface RetryOptions<T, TArgs extends any[]> {
 		fn: (...args: TArgs) => Promise<Result<T, ResultError>>;
 		args: TArgs;

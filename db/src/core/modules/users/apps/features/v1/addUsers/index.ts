@@ -1,17 +1,18 @@
-import { sealed, Service } from "@kishornaik/utils";
-import { AddService } from "../../../../../../shared/services/db/add";
-import { UserEntity } from "../../../../infrastructures/entity/tUsers";
-import { UserCommunicationEntity } from "../../../../infrastructures/entity/tCommunications";
-import { UserCredentialsEntity } from "../../../../infrastructures/entity/tCredentials";
-import { UserKeysEntity } from "../../../../infrastructures/entity/tKeys";
+import { sealed, Service } from '@kishornaik/utils';
+import { AddService } from '../../../../../../shared/services/db/add';
+import { UserEntity } from '../../../../infrastructures/entity/tUsers';
+import { UserCommunicationEntity } from '../../../../infrastructures/entity/tCommunications';
+import { UserCredentialsEntity } from '../../../../infrastructures/entity/tCredentials';
+import { UserKeysEntity } from '../../../../infrastructures/entity/tKeys';
+import { UsersSettingsEntity } from '../../../../user.Module';
 
 //#region Add Users
 @sealed
 @Service()
-export class AddUsersDbService extends AddService<UserEntity>{
-  public constructor(){
-    super(UserEntity)
-  }
+export class AddUsersDbService extends AddService<UserEntity> {
+	public constructor() {
+		super(UserEntity);
+	}
 }
 
 //#endregion
@@ -19,29 +20,39 @@ export class AddUsersDbService extends AddService<UserEntity>{
 //#region Add User Communication
 @sealed
 @Service()
-export class AddUserCommunicationDbService extends AddService<UserCommunicationEntity>{
-  public constructor(){
-    super(UserCommunicationEntity);
-  }
+export class AddUserCommunicationDbService extends AddService<UserCommunicationEntity> {
+	public constructor() {
+		super(UserCommunicationEntity);
+	}
 }
 //#region
 
 // #region Add User Credentials
 @sealed
 @Service()
-export class AddUserCredentialsDbService extends AddService<UserCredentialsEntity>{
-  public constructor(){
-    super(UserCredentialsEntity);
-  }
+export class AddUserCredentialsDbService extends AddService<UserCredentialsEntity> {
+	public constructor() {
+		super(UserCredentialsEntity);
+	}
 }
 // #endregion
 
 // #region User Keys
 @sealed
 @Service()
-export class AddUserKeysDbService extends AddService<UserKeysEntity>{
-  public constructor(){
-    super(UserKeysEntity);
-  }
+export class AddUserKeysDbService extends AddService<UserKeysEntity> {
+	public constructor() {
+		super(UserKeysEntity);
+	}
+}
+// #endregion
+
+// #region User Settings
+@sealed
+@Service()
+export class AddUserSettingsDbService extends AddService<UsersSettingsEntity> {
+	public constructor() {
+		super(UsersSettingsEntity);
+	}
 }
 // #endregion

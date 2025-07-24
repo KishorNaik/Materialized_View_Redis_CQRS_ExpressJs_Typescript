@@ -1,6 +1,5 @@
-import { Err, Ok, Result, saltRounds, Service, StatusCodes } from '@kishornaik/utils';
+import { Err, Ok, Result, saltRounds, Service, StatusCodes, bcrypt } from '@kishornaik/utils';
 import { ResultError, ResultFactory } from '@kishornaik/utils';
-import * as bcrypt from 'bcrypt';
 
 export interface IHashPasswordResult {
 	hash: string;

@@ -3,10 +3,11 @@ import { DataResponseFactory } from '../response';
 import { StatusCodes } from 'http-status-codes';
 import { DataResponse } from '../../../models/response/data.Response';
 
-export namespace Transactions {
+export namespace TransactionsWrapper {
 	export interface ITransactionOptions<TResponse> {
 		queryRunner: QueryRunner;
-		onTry: () => Promise<DataResponse<TResponse>>;
+		onTransaction: () => Promise<DataResponse<TResponse>>;
+		onPostCommit?: () => Promise<void>;
 	}
 
 	export const runAsync = async <TResponse>(
@@ -21,15 +22,22 @@ export namespace Transactions {
 		if (!params.queryRunner)
 			return DataResponseFactory.error(StatusCodes.BAD_REQUEST, `queryRunner is required`);
 
-		if (!params.onTry)
-			return DataResponseFactory.error(StatusCodes.BAD_REQUEST, `onTry body is required`);
+		if (!params.onTransaction)
+			return DataResponseFactory.error(
+				StatusCodes.BAD_REQUEST,
+				`onTransaction body is required`
+			);
 
-		const { queryRunner, onTry } = params;
+		const { queryRunner, onTransaction, onPostCommit } = params;
 
 		try {
 			await queryRunner.startTransaction();
-			const response = await onTry();
+			const response = await onTransaction();
 			await queryRunner.commitTransaction();
+
+			if (onPostCommit) {
+				onPostCommit();
+			}
 
 			return response;
 		} catch (ex) {

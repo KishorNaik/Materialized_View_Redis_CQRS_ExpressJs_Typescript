@@ -2,7 +2,6 @@ import { DataSource, QueryRunner, SelectQueryBuilder } from '@kishornaik/utils';
 import { DB_DATABASE, DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME } from '../env';
 import { userModuleEntityFederation } from '../../modules/app.Module';
 
-
 export const dbDataSource = new DataSource({
 	type: 'postgres',
 	host: DB_HOST,

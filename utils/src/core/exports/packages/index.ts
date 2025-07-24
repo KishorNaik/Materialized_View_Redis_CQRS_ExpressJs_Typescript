@@ -1,11 +1,11 @@
 import Enumerable from 'linq';
+import bcrypt from "bcrypt";
 export * from 'typeorm';
 export * from 'neverthrow';
 export * from 'typedi';
 export * from 'guid-typescript';
 export * from 'http-status-codes';
 export * from 'uuid';
-export * from 'bcrypt';
 export * from 'axios';
 export {
 	Mediator,
@@ -20,4 +20,4 @@ export {
 	pipelineBehavior,
 } from 'mediatr-ts';
 export { CronJob } from 'cron';
-export { Enumerable };
+export { Enumerable,bcrypt };

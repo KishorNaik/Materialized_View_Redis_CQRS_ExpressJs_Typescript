@@ -2,7 +2,7 @@ import { App } from '@/app';
 import { ValidateEnv } from '@kishornaik/utils';
 import { trpcModulesFederation, restApiModulesFederation } from './modules/app.Module';
 import { setDatabase } from './config/db';
-//import { destroyDatabase } from '@kishornaik/db';
+import { destroyDatabase } from '@kishornaik/db';
 
 ValidateEnv();
 
@@ -14,7 +14,7 @@ const runServer = () => {
 		.initializeErrorHandling()
 		.listen()
 		.gracefulShutdown(async () => {
-			//await destroyDatabase();
+			await destroyDatabase();
 		});
 };
 

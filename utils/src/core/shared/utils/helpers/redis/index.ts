@@ -8,7 +8,7 @@ import CircuitBreaker from 'opossum';
 import IORedis from 'ioredis';
 import { ConnectionOptions } from 'bullmq';
 import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from '../../../../config/env';
-import { ResultFactory, tryCatchResultAsync } from '../../miscellaneous/response';
+import { ResultFactory, ExceptionsWrapper } from '../../miscellaneous/response';
 import { IServiceHandlerAsync } from '../services';
 import winston from 'winston';
 
@@ -169,7 +169,7 @@ export abstract class RedisStoreWrapper<TParams extends object, TResult extends 
 		params: TParams
 	): Promise<Result<TResult, ResultError>> {
 		let result: TResult;
-		return tryCatchResultAsync(async () => {
+		return ExceptionsWrapper.tryCatchResultAsync(async () => {
 			// Check if setCacheDataAsync function implement or not
 			if (!this.setCacheDataAsync)
 				return ResultFactory.error(
