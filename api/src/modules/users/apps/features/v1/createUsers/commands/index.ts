@@ -16,10 +16,11 @@ import {
 	defineParallelStep,
 	GuardWrapper,
 	IAesEncryptResult,
+  FireAndForgetWrapper,
 } from '@kishornaik/utils';
-import { logger } from '@/shared/utils/helpers/loggers';
+import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
 import { getQueryRunner } from '@kishornaik/db';
-import { CreateUserDecryptService } from './services/decrypte';
+import { CreateUserDecryptService } from './services/decrypt';
 import { ENCRYPTION_KEY } from '../../../../../../../config/env';
 import { CreateUserRequestValidationService } from './services/validations';
 import { CreateUserRequestDto, CreateUserResponseDto } from '../contracts';
@@ -32,7 +33,7 @@ import {
 import { IHashPasswordResult } from '@/shared/services/users/user.HashPassword.Service';
 import { CreateUserDbService } from './services/db';
 import { CreateUserMapResponseService } from './services/mapResponse';
-import { CreateUserEncryptResponseService } from './services/encrypte';
+import { CreateUserEncryptResponseService } from './services/encrypt';
 
 // #region Command
 @sealed
@@ -97,7 +98,7 @@ export class CreateUserCommandHandler
 		const queryRunner = getQueryRunner();
 		await queryRunner.connect();
 
-		return TransactionsWrapper.runAsync({
+		return await TransactionsWrapper.runAsync({
 			queryRunner: queryRunner,
 			onTransaction: async () => {
 				const { request } = value;
@@ -210,10 +211,7 @@ export class CreateUserCommandHandler
 					aesResponseDto,
 					'User created successfully'
 				);
-			},
-			onPostCommit: async () => {
-				// Run Messaging Queue (Fire and Forget)
-			},
+			}
 		});
 	}
 }

@@ -1,6 +1,7 @@
 import { DataSource, QueryRunner, SelectQueryBuilder } from '@kishornaik/utils';
 import { DB_DATABASE, DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME } from '../env';
 import { userModuleEntityFederation } from '../../modules/app.Module';
+import { outboxModuleDbDataSourceRegisterEntity } from '../../modules/outbox/outbox.Module';
 
 export const dbDataSource = new DataSource({
 	type: 'postgres',
@@ -11,7 +12,7 @@ export const dbDataSource = new DataSource({
 	database: DB_DATABASE,
 	synchronize: false,
 	logging: true,
-	entities: [...userModuleEntityFederation],
+	entities: [...userModuleEntityFederation, ...outboxModuleDbDataSourceRegisterEntity],
 	subscribers: [],
 	migrations: ['src/migration/**/*.ts'],
 	extra: {

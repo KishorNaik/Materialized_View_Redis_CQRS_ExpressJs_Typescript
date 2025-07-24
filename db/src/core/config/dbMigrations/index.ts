@@ -1,10 +1,17 @@
 import { DataSource, DataSourceOptions } from '@kishornaik/utils';
 import { DB_DATABASE, DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME } from '../env';
+
+/**
+ * Special Note:
+ * Entity must be imported from the exact location
+ */
+
 import { UserEntity } from '../../modules/users/infrastructures/entity/tUsers';
 import { UserCommunicationEntity } from '../../modules/users/infrastructures/entity/tCommunications';
 import { UserCredentialsEntity } from '../../modules/users/infrastructures/entity/tCredentials';
 import { UserKeysEntity } from '../../modules/users/infrastructures/entity/tKeys';
 import { UsersSettingsEntity } from '../../modules/users/infrastructures/entity/tSettings';
+import { OutboxEntity } from '../../modules/outbox/infrastructure/entity/index';
 
 /*
     Generate:
@@ -27,6 +34,7 @@ const connectionOptions: DataSourceOptions = {
 		UserCredentialsEntity,
 		UserKeysEntity,
 		UsersSettingsEntity,
+    OutboxEntity
 	],
 	subscribers: [],
 	migrations: ['src/core/config/dbMigrations/migrations/**/*.ts'],

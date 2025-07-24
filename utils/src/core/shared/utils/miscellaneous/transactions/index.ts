@@ -7,7 +7,6 @@ export namespace TransactionsWrapper {
 	export interface ITransactionOptions<TResponse> {
 		queryRunner: QueryRunner;
 		onTransaction: () => Promise<DataResponse<TResponse>>;
-		onPostCommit?: () => Promise<void>;
 	}
 
 	export const runAsync = async <TResponse>(
@@ -28,16 +27,12 @@ export namespace TransactionsWrapper {
 				`onTransaction body is required`
 			);
 
-		const { queryRunner, onTransaction, onPostCommit } = params;
+		const { queryRunner, onTransaction } = params;
 
 		try {
 			await queryRunner.startTransaction();
 			const response = await onTransaction();
 			await queryRunner.commitTransaction();
-
-			if (onPostCommit) {
-				onPostCommit();
-			}
 
 			return response;
 		} catch (ex) {
