@@ -16,10 +16,10 @@ import {
 	defineParallelStep,
 	GuardWrapper,
 	IAesEncryptResult,
-  FireAndForgetWrapper,
+	FireAndForgetWrapper,
 } from '@kishornaik/utils';
 import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
-import { getQueryRunner } from '@kishornaik/db';
+import { AddOutboxDbService, getQueryRunner } from '@kishornaik/db';
 import { CreateUserDecryptService } from './services/decrypt';
 import { ENCRYPTION_KEY } from '../../../../../../../config/env';
 import { CreateUserRequestValidationService } from './services/validations';
@@ -31,9 +31,10 @@ import {
 	ICreateUserMapEntityServiceResult,
 } from './services/mapEntity';
 import { IHashPasswordResult } from '@/shared/services/users/user.HashPassword.Service';
-import { CreateUserDbService } from './services/db';
 import { CreateUserMapResponseService } from './services/mapResponse';
 import { CreateUserEncryptResponseService } from './services/encrypt';
+import { CreateUserDbService } from './services/db/createUsers';
+import { CreateOutboxDbService } from './services/db/createOutbox';
 
 // #region Command
 @sealed
@@ -62,6 +63,7 @@ enum pipelineSteps {
 	DbService = 'DbService',
 	MapResponseService = 'MapResponseService',
 	EncryptService = 'EncryptService',
+  AddOutBoxDbService = 'AddOutBoxDbService',
 }
 // #endregion
 
@@ -80,6 +82,7 @@ export class CreateUserCommandHandler
 	private readonly _createUserDbService: CreateUserDbService;
 	private readonly _createUserMapResponseService: CreateUserMapResponseService;
 	private readonly _createUserEncryptService: CreateUserEncryptResponseService;
+  private readonly _createOutboxDbService: CreateOutboxDbService;
 
 	public constructor() {
 		this._createUserDecryptService = Container.get(CreateUserDecryptService);
@@ -92,13 +95,14 @@ export class CreateUserCommandHandler
 		this._createUserDbService = Container.get(CreateUserDbService);
 		this._createUserMapResponseService = Container.get(CreateUserMapResponseService);
 		this._createUserEncryptService = Container.get(CreateUserEncryptResponseService);
+    this._createOutboxDbService = Container.get(CreateOutboxDbService);
 	}
 
 	public async handle(value: CreateUserCommand): Promise<DataResponse<AesResponseDto>> {
 		const queryRunner = getQueryRunner();
 		await queryRunner.connect();
 
-		return await TransactionsWrapper.runAsync({
+		return await TransactionsWrapper.runDataResponseAsync({
 			queryRunner: queryRunner,
 			onTransaction: async () => {
 				const { request } = value;
@@ -180,6 +184,17 @@ export class CreateUserCommandHandler
 					});
 				});
 
+        // Add OutBox
+        await this.pipeline.step(pipelineSteps.AddOutBoxDbService, async () => {
+          const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
+            pipelineSteps.MapEntityService
+          );
+          return await this._createOutboxDbService.handleAsync({
+            entity: entityResult,
+            queryRunner: queryRunner,
+          });
+        });
+
 				// Map Response Service
 				await this.pipeline.step(pipelineSteps.MapResponseService, async () => {
 					const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
@@ -211,7 +226,7 @@ export class CreateUserCommandHandler
 					aesResponseDto,
 					'User created successfully'
 				);
-			}
+			},
 		});
 	}
 }
