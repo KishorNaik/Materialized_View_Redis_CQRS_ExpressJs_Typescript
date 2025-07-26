@@ -34,4 +34,8 @@ export class OutboxEntity extends BaseEntity {
 	// Defaults to current timestamp
 	@Column(`timestamp`, { nullable: true, default: () => 'CURRENT_TIMESTAMP' })
 	public lockedAt?: Date;
+
+  @Column(`varchar`, { length: 100, nullable: true })
+  @IsNotEmpty()
+  public traceId?: string
 }

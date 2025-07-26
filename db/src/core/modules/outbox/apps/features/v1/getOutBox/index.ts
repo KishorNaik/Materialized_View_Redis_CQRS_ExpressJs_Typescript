@@ -5,6 +5,7 @@ import {
 	Err,
 	ExceptionsWrapper,
 	IDtoValidation,
+	In,
 	IServiceHandlerAsync,
 	IsSafeString,
 	Ok,
@@ -88,7 +89,7 @@ export class GetOutboxDbService implements IGetOutboxDbService {
 			const claimableRows = await entityManger
 				.createQueryBuilder(OutboxEntity, 'outbox')
 				.where('outbox.eventType = :eventType', { eventType })
-				.andWhere('outbox.jobStatus = :jobStatus', { jobStatus: JobStatusEnum.PENDING })
+				.andWhere('outbox.jobStatus = :jobStatus', { jobStatus: JobStatusEnum.PENDING})
 				.andWhere('outbox.isPublished = :isPublished', { isPublished: BoolEnum.NO })
 				.andWhere('outbox.status = :status', { status: StatusEnum.ACTIVE })
 				.andWhere('outbox.lockedBy IS NULL')
@@ -106,13 +107,19 @@ export class GetOutboxDbService implements IGetOutboxDbService {
 				.update(OutboxEntity)
 				.set({
 					jobStatus: JobStatusEnum.PROCESSING,
-					lockedBy: instanceId,
-					lockedAt: new Date(),
+          lockedBy: instanceId,
+          lockedAt: new Date(),
 				})
 				.whereInIds(ids)
 				.execute();
 
-			return ResultFactory.success(claimableRows);
+      // Get Updated Outbox
+      const updatedOutboxList = await entityManger
+      .createQueryBuilder(OutboxEntity, 'outbox')
+      .where('outbox.id IN (:...ids)', { ids })
+      .getMany();
+
+			return ResultFactory.success(updatedOutboxList);
 		});
 	}
 }

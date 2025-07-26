@@ -1,6 +1,6 @@
 import { UpdateUserRowVersionService } from "@/modules/users/shared/updateRowVersion";
 import { QueryRunner, UpdateUsersDbService, UpdateUserSettingsDbService, UserEntity, UsersSettingsEntity } from "@kishornaik/db";
-import { BoolEnum, Container, ExceptionsWrapper, GuardWrapper, IServiceHandlerVoidAsync, Result, ResultError, ResultFactory, sealed, StatusEnum, VOID_RESULT, VoidResult } from "@kishornaik/utils";
+import { BoolEnum, Container, ExceptionsWrapper, GuardWrapper, IServiceHandlerVoidAsync, Result, ResultError, ResultFactory, sealed, Service, StatusEnum, VOID_RESULT, VoidResult } from "@kishornaik/utils";
 
 Container.set<UpdateUserSettingsDbService>(UpdateUserSettingsDbService, new UpdateUserSettingsDbService());
 
@@ -12,6 +12,7 @@ export interface IUpdateEmailServiceParameters{
 export interface IUpdateEmailService extends IServiceHandlerVoidAsync<IUpdateEmailServiceParameters> {}
 
 @sealed
+@Service()
 export class UpdateEmailService implements IUpdateEmailService {
 
   private readonly _updateUserRowVersionService: UpdateUserRowVersionService;
@@ -35,7 +36,9 @@ export class UpdateEmailService implements IUpdateEmailService {
         return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
 
       // Update Settings
-      const userSettingsEntity:UsersSettingsEntity=user.userSettings;
+      const userSettingsEntity:UsersSettingsEntity=new UsersSettingsEntity();
+      userSettingsEntity.identifier=user.userSettings.identifier;
+      userSettingsEntity.status=StatusEnum.INACTIVE;
       userSettingsEntity.isWelcomeEmailSent=BoolEnum.YES;
       const updateResult = await this._updateUserSettingsDbService.handleAsync(userSettingsEntity,queryRunner);
       if(updateResult.isErr())

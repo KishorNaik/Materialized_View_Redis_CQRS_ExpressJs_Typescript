@@ -33,14 +33,14 @@ export class GetOutboxListService implements IGetOutboxListService {
 		params: IOutboxListServiceParameters
 	): Promise<Result<OutboxEntity[], ResultError>> {
 		return ExceptionsWrapper.tryCatchResultAsync(async () => {
-			const { eventType, instanceId, queryRunner, getOutboxDbService: service } = params;
+			const { eventType, instanceId, queryRunner, getOutboxDbService } = params;
 
 			// Guard
 			const guardResult = new GuardWrapper()
 				.check(params, 'params')
 				.check(eventType, 'eventType')
 				.check(queryRunner, 'queryRunner')
-				.check(service, 'service')
+				.check(getOutboxDbService, 'getOutboxDbService')
 				.check(instanceId, 'instanceId')
 				.validate();
 			if (guardResult.isErr())
@@ -53,7 +53,7 @@ export class GetOutboxListService implements IGetOutboxListService {
 			getOutboxDbDto.take = 12;
 
 			// Call Service
-			const result = await service.handleAsync({
+			const result = await getOutboxDbService.handleAsync({
 				request: getOutboxDbDto,
 				queryRunner: queryRunner,
 			});

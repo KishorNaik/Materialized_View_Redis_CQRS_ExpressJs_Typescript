@@ -1,5 +1,5 @@
 import { logger } from '@/shared/utils/helpers/loggers';
-import { GetOutboxDbService, getQueryRunner, UpdateOutboxDbService } from '@kishornaik/db';
+import { GetOutboxDbService, getQueryRunner, OutboxEntity, UpdateOutboxDbService } from '@kishornaik/db';
 import {
 	WorkerCronJob,
 	CronJob,
@@ -58,37 +58,90 @@ export class SendWelcomeUserIntegrationEventService
     this._updateEmailService = Container.get(UpdateEmailService);
 	}
 
-	public async handleAsync(): Promise<Result<VoidResult, ResultError>> {
-		const queryRunner = getQueryRunner();
-		await queryRunner.connect();
+  private async getOutBoxListAsync(): Promise<Result<OutboxEntity[], ResultError>> {
+    const queryRunnerOutboxList = getQueryRunner();
+		await queryRunnerOutboxList.connect();
 
-		return await TransactionsWrapper.runResultAsync({
-			queryRunner: queryRunner,
+    // GetOutBox List with Update the Job Status immediately
+		var outboxListResult = await TransactionsWrapper.runResultAsync<OutboxEntity[]>({
+			queryRunner: queryRunnerOutboxList,
 			onTransaction: async () => {
 				// Get Outbox List
 				const getOutBoxListResult = await this._getOutboxListService.handleAsync({
-					eventType: `WelcomeUserEmailIntegrationEvent`,
+					eventType: `send-welcome-user-integration-event-queue`,
 					instanceId: `machine_1`,
-					queryRunner: queryRunner,
+					queryRunner: queryRunnerOutboxList,
 					getOutboxDbService: this._getOutboxDbService,
 				});
 				if (getOutBoxListResult.isErr()) {
 					if (getOutBoxListResult.error.statusCode !== StatusCodes.NOT_FOUND) {
-						await queryRunner.rollbackTransaction();
 						return ResultFactory.error(
 							getOutBoxListResult.error.statusCode,
 							getOutBoxListResult.error.message
 						);
 					}
 					logger.info('No outbox list found');
-					return ResultFactory.success(VOID_RESULT);
+					return ResultFactory.success([]);
 				}
 
 
 				const outboxList = getOutBoxListResult.value;
         logger.info(`outbox list length ${outboxList.length}`);
+				return ResultFactory.success(outboxList);
+			}
+		});
 
-				// Send Integration Event BatchWise
+    return outboxListResult;
+  }
+
+  private async runOutboxAsync(outboxList: OutboxEntity[]): Promise<Result<VoidResult, ResultError>> {
+    const queryRunnerBatch=getQueryRunner();
+    await queryRunnerBatch.connect();
+
+    return await TransactionsWrapper.runResultAsync<VoidResult>({
+      queryRunner:queryRunnerBatch,
+      onTransaction: async () => {
+        // Send Integration Event BatchWise
+        await this._outboxBatchService.handleAsync({
+					outboxList: outboxList,
+					services: {
+						publishWelcomeUserEmailIntegrationEvent:
+							this._publishWelcomeUserEmailEventService,
+						updateOutboxDbService: this._updateOutboxDbService,
+            updateEmailService: this._updateEmailService
+					},
+					producer: producer,
+					queryRunner: queryRunnerBatch,
+					queueName: queueName,
+				});
+
+        return ResultFactory.success(VOID_RESULT);
+      }
+    });
+  }
+
+	public async handleAsync(): Promise<Result<VoidResult, ResultError>> {
+
+
+    const outboxListResult = await this.getOutBoxListAsync();
+    if (outboxListResult.isErr())
+      return ResultFactory.error(outboxListResult.error.statusCode, outboxListResult.error.message);
+
+    if(outboxListResult.value.length===0)
+      return ResultFactory.success(VOID_RESULT);
+
+    const outboxList=outboxListResult.value;
+
+    await this.runOutboxAsync(outboxList);
+
+    return ResultFactory.success(VOID_RESULT);
+	}
+}
+
+
+/*
+
+// Send Integration Event BatchWise
 				await this._outboxBatchService.handleAsync({
 					outboxList: outboxList,
 					services: {
@@ -102,8 +155,4 @@ export class SendWelcomeUserIntegrationEventService
 					queueName: queueName,
 				});
 
-				return ResultFactory.success(VOID_RESULT);
-			}
-		});
-	}
-}
+*/

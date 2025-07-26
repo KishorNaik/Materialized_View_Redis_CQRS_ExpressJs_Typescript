@@ -23,6 +23,7 @@ Container.set<AddOutboxDbService>(AddOutboxDbService, new AddOutboxDbService());
 export interface ICreateOutboxDbServiceParameters {
 	entity: ICreateUserMapEntityServiceResult;
 	queryRunner: QueryRunner;
+  traceId: string;
 }
 
 export interface ICreateOutboxDbService
@@ -42,12 +43,13 @@ export class CreateOutboxDbService implements ICreateOutboxDbService {
 	): Promise<Result<VoidResult, ResultError>> {
 		return ExceptionsWrapper.tryCatchResultAsync(async () => {
 			// Guard
-			const { entity, queryRunner } = params;
+			const { entity, queryRunner,traceId } = params;
 
       const guardResult = new GuardWrapper()
         .check(params, 'params')
         .check(entity, 'user')
         .check(queryRunner, 'queryRunner')
+        .check(traceId, 'traceId')
         .validate();
       if (guardResult.isErr())
         return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
@@ -71,7 +73,7 @@ export class CreateOutboxDbService implements ICreateOutboxDbService {
 			outbox.created_date = new Date();
 			outbox.modified_date = new Date();
       outbox.jobStatus=JobStatusEnum.PENDING;
-      outbox.lockedBy=`machine_1`; // Take from .env file
+      outbox.traceId=traceId;
 
 			// Add
 			const result = await this._addOutboxDbService.handleAsync(outbox, queryRunner);

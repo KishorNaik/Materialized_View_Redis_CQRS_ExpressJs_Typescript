@@ -1,4 +1,4 @@
-import { OutboxEntity, UpdateOutboxDbService, QueryRunner } from '@kishornaik/db';
+import { OutboxEntity, UpdateOutboxDbService, QueryRunner, getQueryRunner } from '@kishornaik/db';
 import {
 	ExceptionsWrapper,
 	executeBatchArrayAsync,
@@ -72,8 +72,7 @@ export class OutboxBatchService implements IOutboxBatchService {
 					});
 					if (result.isErr()) {
 						logger.error(
-							`Batch:Failed to send email to ${outbox.identifier}, error: ${result.error.message}`
-						);
+							`Batch:Failed to send email to ${outbox.identifier}, error: ${result.error.message}`);
 					} else {
 						logger.info(`Batch:Email sent to ${outbox.identifier}`);
 					}

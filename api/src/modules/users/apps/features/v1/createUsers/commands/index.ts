@@ -17,6 +17,7 @@ import {
 	GuardWrapper,
 	IAesEncryptResult,
 	FireAndForgetWrapper,
+  ResultFactory,
 } from '@kishornaik/utils';
 import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
 import { AddOutboxDbService, getQueryRunner } from '@kishornaik/db';
@@ -178,10 +179,17 @@ export class CreateUserCommandHandler
 					const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
 						pipelineSteps.MapEntityService
 					);
-					return await this._createUserDbService.handleAsync({
+					const dbResult= await this._createUserDbService.handleAsync({
 						entity: entityResult,
 						queryRunner: queryRunner,
 					});
+          if(dbResult.isErr()){
+            if(dbResult.error.message.includes("duplicate key value violates unique constraint")){
+              return ResultFactory.error(StatusCodes.CONFLICT, "User already exists");
+            }
+            return ResultFactory.error(dbResult.error.statusCode, dbResult.error.message);
+          }
+          return ResultFactory.success(dbResult.value);
 				});
 
         // Add OutBox
@@ -192,6 +200,7 @@ export class CreateUserCommandHandler
           return await this._createOutboxDbService.handleAsync({
             entity: entityResult,
             queryRunner: queryRunner,
+            traceId:getTraceId()
           });
         });
 

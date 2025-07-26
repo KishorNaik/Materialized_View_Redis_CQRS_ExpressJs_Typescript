@@ -89,8 +89,8 @@ describe(`Get-Outbox-Unit-Tests`, () => {
 	//node --trace-deprecation --test --test-name-pattern='should_return_true_when_all_service_passed' --require ts-node/register -r tsconfig-paths/register ./src/core/modules/outbox/tests/features/v1/getOutbox/index.test.ts
 	test(`should_return_true_when_all_service_passed`, async () => {
 		const request: GetOutboxDbDto = new GetOutboxDbDto();
-		request.eventType = 'UserEmailSendEvent';
-		request.instanceId = `CRON_JOB_INSTANCE_1`;
+		request.eventType = 'send-welcome-user-integration-event-queue';
+		request.instanceId = `machine_1`;
 		request.take = 12;
 
 		await queryRunner.startTransaction();

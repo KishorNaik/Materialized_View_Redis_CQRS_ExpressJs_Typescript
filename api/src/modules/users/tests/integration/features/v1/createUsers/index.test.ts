@@ -4,7 +4,7 @@ import { App } from '@/app';
 import { restApiModulesFederation } from '@/modules/app.Module';
 import { AES, AesRequestDto, ValidateEnv } from '@kishornaik/utils';
 import { describe, it } from 'node:test';
-import { initializeDatabase } from '@kishornaik/db';
+import { destroyDatabase, initializeDatabase } from '@kishornaik/db';
 import { CreateUserRequestDto } from '@/modules/users/apps/features/v1/createUsers';
 import { ENCRYPTION_KEY } from '@/config/env';
 
@@ -23,11 +23,11 @@ describe(`Create_User_Module_Integration_Tests`, () => {
 		await initializeDatabase();
 
 		const requestDto: CreateUserRequestDto = new CreateUserRequestDto();
-		requestDto.firstName = 'sam';
+		requestDto.firstName = 'janet';
 		requestDto.lastName = 'Doe';
-		requestDto.email = `sam.doe@example.com`;
+		requestDto.email = `janet.doe@example.com`;
 		requestDto.password = 'password0123';
-		requestDto.mobileNo = '9111111117';
+		requestDto.mobileNo = '9111111130';
 
 		const aes = new AES(ENCRYPTION_KEY);
 		const encryptRequestBody = await aes.encryptAsync(JSON.stringify(requestDto));
@@ -36,6 +36,19 @@ describe(`Create_User_Module_Integration_Tests`, () => {
 		aesRequestDto.body = encryptRequestBody;
 
 		const response = await request(app).post('/api/v1/users').send(aesRequestDto);
-		expect(response.status).toBe(201);
+    if(response.status !== 201) {
+      await destroyDatabase();
+      setTimeout(() => {
+        process.exit(0);
+      }, 5000);
+      expect(true).toBe(false);
+    }
+
+    await destroyDatabase();
+		 setTimeout(() => {
+        process.exit(0);
+      }, 5000);
+    expect(response.status).toBe(201);
+
 	});
 });

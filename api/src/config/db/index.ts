@@ -1,7 +1,7 @@
 import { initializeDatabase } from '@kishornaik/db';
 
-export const setDatabase = (): Promise<void> => {
+export const setDatabase = async (): Promise<void> => {
 	// Set Database Here
-	initializeDatabase();
+	await initializeDatabase();
 	return Promise.resolve();
 };
