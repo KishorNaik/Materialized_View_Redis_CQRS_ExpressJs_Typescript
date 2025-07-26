@@ -144,7 +144,7 @@ export const getIORedisConnection = (): ConnectionOptions => {
 
 export interface IRedisStoreWrapperParameters<TParams> {
 	key: string;
-	env: 'production' | 'dev';
+	env: string;
 	setParams: TParams;
 }
 
@@ -270,13 +270,13 @@ export abstract class RedisStoreWrapper<TParams extends object, TResult extends 
 				this._logger.info(`RedisStoreWrapper: Redis Cache value found`);
 
 				// Call setRowVersionAsync function
-				if (!this.setRowVersionAsync)
+				if (!this.getRowVersionAsync)
 					return ResultFactory.error(
 						StatusCodes.NOT_IMPLEMENTED,
 						`setRowVersionAsync is not implemented`
 					);
 
-				const setRowVersionResult = await this.setRowVersionAsync(setParams);
+				const setRowVersionResult = await this.getRowVersionAsync(setParams);
 				if (setRowVersionResult.isErr())
 					return ResultFactory.error(
 						setRowVersionResult.error.statusCode,
@@ -332,7 +332,7 @@ export abstract class RedisStoreWrapper<TParams extends object, TResult extends 
 
 	protected abstract setCacheDataAsync(params: TParams): Promise<Result<TResult, ResultError>>;
 
-	protected abstract setRowVersionAsync(
+	protected abstract getRowVersionAsync(
 		params: TParams
 	): Promise<Result<RowVersionNumber, ResultError>>;
 }

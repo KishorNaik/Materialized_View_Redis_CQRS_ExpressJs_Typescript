@@ -1,3 +1,4 @@
+import { BoolEnum } from "@kishornaik/utils";
 import { Type } from "class-transformer";
 import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
@@ -25,9 +26,9 @@ export class GetUserByIdentifierResponseDto {
   };
   public settings:{
     identifier?:string;
-    isEmailVerified?: boolean;
-    isVerificationEmailSent?: boolean;
-    isWelcomeEmailSent?: boolean;
+    isEmailVerified?: BoolEnum;
+    isVerificationEmailSent?: BoolEnum;
+    isWelcomeEmailSent?: BoolEnum;
   }
 }
 // #endregion
