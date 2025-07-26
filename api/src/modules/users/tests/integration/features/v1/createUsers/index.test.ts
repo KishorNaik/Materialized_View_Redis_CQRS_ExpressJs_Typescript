@@ -36,19 +36,18 @@ describe(`Create_User_Module_Integration_Tests`, () => {
 		aesRequestDto.body = encryptRequestBody;
 
 		const response = await request(app).post('/api/v1/users').send(aesRequestDto);
-    if(response.status !== 201) {
-      await destroyDatabase();
-      setTimeout(() => {
-        process.exit(0);
-      }, 5000);
-      expect(true).toBe(false);
-    }
+		if (response.status !== 201) {
+			await destroyDatabase();
+			setTimeout(() => {
+				process.exit(0);
+			}, 5000);
+			expect(true).toBe(false);
+		}
 
-    await destroyDatabase();
-		 setTimeout(() => {
-        process.exit(0);
-      }, 5000);
-    expect(response.status).toBe(201);
-
+		await destroyDatabase();
+		setTimeout(() => {
+			process.exit(0);
+		}, 5000);
+		expect(response.status).toBe(201);
 	});
 });

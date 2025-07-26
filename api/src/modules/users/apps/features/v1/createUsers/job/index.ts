@@ -3,12 +3,11 @@ import { Container, CronJob, WorkerCronJob } from '@kishornaik/utils';
 import { SendWelcomeUserIntegrationEventService } from './event';
 
 export const publishWelcomeUserEmailIntegrationEventJob: WorkerCronJob = async () => {
-
 	const job = new CronJob(
 		`*/20 * * * * *`,
 		async () => {
 			logger.info(`SendEmailEventCronJob started....`);
-      const result = await Container.get(
+			const result = await Container.get(
 				SendWelcomeUserIntegrationEventService
 			).handleAsync();
 			if (result.isErr()) {

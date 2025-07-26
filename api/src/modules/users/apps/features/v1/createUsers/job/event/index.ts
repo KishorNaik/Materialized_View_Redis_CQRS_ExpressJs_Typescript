@@ -1,5 +1,10 @@
 import { logger } from '@/shared/utils/helpers/loggers';
-import { GetOutboxDbService, getQueryRunner, OutboxEntity, UpdateOutboxDbService } from '@kishornaik/db';
+import {
+	GetOutboxDbService,
+	getQueryRunner,
+	OutboxEntity,
+	UpdateOutboxDbService,
+} from '@kishornaik/db';
 import {
 	WorkerCronJob,
 	CronJob,
@@ -45,7 +50,7 @@ export class SendWelcomeUserIntegrationEventService
 	private readonly _getOutboxListService: GetOutboxListService;
 	private readonly _outboxBatchService: OutboxBatchService;
 	private readonly _publishWelcomeUserEmailEventService: PublishWelcomeUserEmailEventService;
-  private readonly _updateEmailService:UpdateEmailService;
+	private readonly _updateEmailService: UpdateEmailService;
 
 	public constructor() {
 		this._getOutboxDbService = Container.get(GetOutboxDbService);
@@ -55,14 +60,14 @@ export class SendWelcomeUserIntegrationEventService
 		this._publishWelcomeUserEmailEventService = Container.get(
 			PublishWelcomeUserEmailEventService
 		);
-    this._updateEmailService = Container.get(UpdateEmailService);
+		this._updateEmailService = Container.get(UpdateEmailService);
 	}
 
-  private async getOutBoxListAsync(): Promise<Result<OutboxEntity[], ResultError>> {
-    const queryRunnerOutboxList = getQueryRunner();
+	private async getOutBoxListAsync(): Promise<Result<OutboxEntity[], ResultError>> {
+		const queryRunnerOutboxList = getQueryRunner();
 		await queryRunnerOutboxList.connect();
 
-    // GetOutBox List with Update the Job Status immediately
+		// GetOutBox List with Update the Job Status immediately
 		var outboxListResult = await TransactionsWrapper.runResultAsync<OutboxEntity[]>({
 			queryRunner: queryRunnerOutboxList,
 			onTransaction: async () => {
@@ -84,60 +89,60 @@ export class SendWelcomeUserIntegrationEventService
 					return ResultFactory.success([]);
 				}
 
-
 				const outboxList = getOutBoxListResult.value;
-        logger.info(`outbox list length ${outboxList.length}`);
+				logger.info(`outbox list length ${outboxList.length}`);
 				return ResultFactory.success(outboxList);
-			}
+			},
 		});
 
-    return outboxListResult;
-  }
+		return outboxListResult;
+	}
 
-  private async runOutboxAsync(outboxList: OutboxEntity[]): Promise<Result<VoidResult, ResultError>> {
-    const queryRunnerBatch=getQueryRunner();
-    await queryRunnerBatch.connect();
+	private async runOutboxAsync(
+		outboxList: OutboxEntity[]
+	): Promise<Result<VoidResult, ResultError>> {
+		const queryRunnerBatch = getQueryRunner();
+		await queryRunnerBatch.connect();
 
-    return await TransactionsWrapper.runResultAsync<VoidResult>({
-      queryRunner:queryRunnerBatch,
-      onTransaction: async () => {
-        // Send Integration Event BatchWise
-        await this._outboxBatchService.handleAsync({
+		return await TransactionsWrapper.runResultAsync<VoidResult>({
+			queryRunner: queryRunnerBatch,
+			onTransaction: async () => {
+				// Send Integration Event BatchWise
+				await this._outboxBatchService.handleAsync({
 					outboxList: outboxList,
 					services: {
 						publishWelcomeUserEmailIntegrationEvent:
 							this._publishWelcomeUserEmailEventService,
 						updateOutboxDbService: this._updateOutboxDbService,
-            updateEmailService: this._updateEmailService
+						updateEmailService: this._updateEmailService,
 					},
 					producer: producer,
 					queryRunner: queryRunnerBatch,
 					queueName: queueName,
 				});
 
-        return ResultFactory.success(VOID_RESULT);
-      }
-    });
-  }
+				return ResultFactory.success(VOID_RESULT);
+			},
+		});
+	}
 
 	public async handleAsync(): Promise<Result<VoidResult, ResultError>> {
+		const outboxListResult = await this.getOutBoxListAsync();
+		if (outboxListResult.isErr())
+			return ResultFactory.error(
+				outboxListResult.error.statusCode,
+				outboxListResult.error.message
+			);
 
+		if (outboxListResult.value.length === 0) return ResultFactory.success(VOID_RESULT);
 
-    const outboxListResult = await this.getOutBoxListAsync();
-    if (outboxListResult.isErr())
-      return ResultFactory.error(outboxListResult.error.statusCode, outboxListResult.error.message);
+		const outboxList = outboxListResult.value;
 
-    if(outboxListResult.value.length===0)
-      return ResultFactory.success(VOID_RESULT);
+		await this.runOutboxAsync(outboxList);
 
-    const outboxList=outboxListResult.value;
-
-    await this.runOutboxAsync(outboxList);
-
-    return ResultFactory.success(VOID_RESULT);
+		return ResultFactory.success(VOID_RESULT);
 	}
 }
-
 
 /*
 

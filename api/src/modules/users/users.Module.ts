@@ -3,6 +3,6 @@ import { CreateUserEndpoint } from './apps/features/v1/createUsers';
 import { publishWelcomeUserEmailIntegrationEventJob } from './apps/features/v1/createUsers/job';
 
 const userModules: Function[] = [CreateUserEndpoint];
-const userCronJobModules:WorkerCronJob[]=[publishWelcomeUserEmailIntegrationEventJob];
+const userCronJobModules: WorkerCronJob[] = [publishWelcomeUserEmailIntegrationEventJob];
 
-export { userModules,userCronJobModules };
+export { userModules, userCronJobModules };

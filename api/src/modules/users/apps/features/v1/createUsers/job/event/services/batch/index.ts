@@ -22,7 +22,7 @@ export interface IOutboxBatchParameters {
 	services: {
 		publishWelcomeUserEmailIntegrationEvent: PublishWelcomeUserEmailEventService;
 		updateOutboxDbService: UpdateOutboxDbService;
-    updateEmailService:UpdateEmailService;
+		updateEmailService: UpdateEmailService;
 	};
 	producer: RequestReplyProducerBullMq;
 	queryRunner: QueryRunner;
@@ -37,7 +37,11 @@ export class OutboxBatchService implements IOutboxBatchService {
 	public handleAsync(params: IOutboxBatchParameters): Promise<Result<VoidResult, ResultError>> {
 		return ExceptionsWrapper.tryCatchResultAsync(async () => {
 			const { outboxList, services, producer, queryRunner, queueName } = params;
-			const { publishWelcomeUserEmailIntegrationEvent, updateOutboxDbService, updateEmailService } = services;
+			const {
+				publishWelcomeUserEmailIntegrationEvent,
+				updateOutboxDbService,
+				updateEmailService,
+			} = services;
 
 			// Guard
 			const guardResult = new GuardWrapper()
@@ -50,7 +54,7 @@ export class OutboxBatchService implements IOutboxBatchService {
 					'publishWelcomeUserEmailIntegrationEvent'
 				)
 				.check(queueName, 'queueName')
-        .check(updateEmailService, 'updateEmailService')
+				.check(updateEmailService, 'updateEmailService')
 				.validate();
 			if (guardResult.isErr())
 				return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
@@ -65,14 +69,15 @@ export class OutboxBatchService implements IOutboxBatchService {
 						outbox: outbox,
 						services: {
 							updateOutboxDbService: updateOutboxDbService,
-              updateEmailService:updateEmailService
+							updateEmailService: updateEmailService,
 						},
 						queryRunner: queryRunner,
 						queueName: queueName,
 					});
 					if (result.isErr()) {
 						logger.error(
-							`Batch:Failed to send email to ${outbox.identifier}, error: ${result.error.message}`);
+							`Batch:Failed to send email to ${outbox.identifier}, error: ${result.error.message}`
+						);
 					} else {
 						logger.info(`Batch:Email sent to ${outbox.identifier}`);
 					}

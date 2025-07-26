@@ -23,7 +23,6 @@ import {
 } from '@kishornaik/utils';
 import { ICreateUserMapEntityServiceResult } from '../../mapEntity';
 
-
 Container.set<AddUsersDbService>(AddUsersDbService, new AddUsersDbService());
 Container.set<AddUserCommunicationDbService>(
 	AddUserCommunicationDbService,

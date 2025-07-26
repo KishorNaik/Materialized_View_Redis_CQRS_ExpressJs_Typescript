@@ -17,7 +17,7 @@ import {
 	GuardWrapper,
 	IAesEncryptResult,
 	FireAndForgetWrapper,
-  ResultFactory,
+	ResultFactory,
 } from '@kishornaik/utils';
 import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
 import { AddOutboxDbService, getQueryRunner } from '@kishornaik/db';
@@ -64,7 +64,7 @@ enum pipelineSteps {
 	DbService = 'DbService',
 	MapResponseService = 'MapResponseService',
 	EncryptService = 'EncryptService',
-  AddOutBoxDbService = 'AddOutBoxDbService',
+	AddOutBoxDbService = 'AddOutBoxDbService',
 }
 // #endregion
 
@@ -83,7 +83,7 @@ export class CreateUserCommandHandler
 	private readonly _createUserDbService: CreateUserDbService;
 	private readonly _createUserMapResponseService: CreateUserMapResponseService;
 	private readonly _createUserEncryptService: CreateUserEncryptResponseService;
-  private readonly _createOutboxDbService: CreateOutboxDbService;
+	private readonly _createOutboxDbService: CreateOutboxDbService;
 
 	public constructor() {
 		this._createUserDecryptService = Container.get(CreateUserDecryptService);
@@ -96,7 +96,7 @@ export class CreateUserCommandHandler
 		this._createUserDbService = Container.get(CreateUserDbService);
 		this._createUserMapResponseService = Container.get(CreateUserMapResponseService);
 		this._createUserEncryptService = Container.get(CreateUserEncryptResponseService);
-    this._createOutboxDbService = Container.get(CreateOutboxDbService);
+		this._createOutboxDbService = Container.get(CreateOutboxDbService);
 	}
 
 	public async handle(value: CreateUserCommand): Promise<DataResponse<AesResponseDto>> {
@@ -179,30 +179,37 @@ export class CreateUserCommandHandler
 					const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
 						pipelineSteps.MapEntityService
 					);
-					const dbResult= await this._createUserDbService.handleAsync({
+					const dbResult = await this._createUserDbService.handleAsync({
 						entity: entityResult,
 						queryRunner: queryRunner,
 					});
-          if(dbResult.isErr()){
-            if(dbResult.error.message.includes("duplicate key value violates unique constraint")){
-              return ResultFactory.error(StatusCodes.CONFLICT, "User already exists");
-            }
-            return ResultFactory.error(dbResult.error.statusCode, dbResult.error.message);
-          }
-          return ResultFactory.success(dbResult.value);
+					if (dbResult.isErr()) {
+						if (
+							dbResult.error.message.includes(
+								'duplicate key value violates unique constraint'
+							)
+						) {
+							return ResultFactory.error(StatusCodes.CONFLICT, 'User already exists');
+						}
+						return ResultFactory.error(
+							dbResult.error.statusCode,
+							dbResult.error.message
+						);
+					}
+					return ResultFactory.success(dbResult.value);
 				});
 
-        // Add OutBox
-        await this.pipeline.step(pipelineSteps.AddOutBoxDbService, async () => {
-          const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
-            pipelineSteps.MapEntityService
-          );
-          return await this._createOutboxDbService.handleAsync({
-            entity: entityResult,
-            queryRunner: queryRunner,
-            traceId:getTraceId()
-          });
-        });
+				// Add OutBox
+				await this.pipeline.step(pipelineSteps.AddOutBoxDbService, async () => {
+					const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
+						pipelineSteps.MapEntityService
+					);
+					return await this._createOutboxDbService.handleAsync({
+						entity: entityResult,
+						queryRunner: queryRunner,
+						traceId: getTraceId(),
+					});
+				});
 
 				// Map Response Service
 				await this.pipeline.step(pipelineSteps.MapResponseService, async () => {

@@ -1,5 +1,11 @@
 import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
-import { OutboxEntity, UpdateOutboxDbService, QueryRunner, JobStatusEnum, UserEntity } from '@kishornaik/db';
+import {
+	OutboxEntity,
+	UpdateOutboxDbService,
+	QueryRunner,
+	JobStatusEnum,
+	UserEntity,
+} from '@kishornaik/db';
 import {
 	BoolEnum,
 	Container,
@@ -27,7 +33,7 @@ export interface IPublishWelcomeUserEmailEventServiceParameters {
 	queueName: string;
 	services: {
 		updateOutboxDbService: UpdateOutboxDbService;
-    updateEmailService:UpdateEmailService;
+		updateEmailService: UpdateEmailService;
 	};
 	outbox: OutboxEntity;
 	queryRunner: QueryRunner;
@@ -39,22 +45,26 @@ export interface IPublishWelcomeUserEmailEventService
 @sealed
 @Service()
 export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserEmailEventService {
+	private async reverseOutboxAsync(
+		outbox: OutboxEntity,
+		updateOutboxDbService: UpdateOutboxDbService,
+		queryRunner: QueryRunner
+	) {
+		// Reverse Outbox
+		outbox.isPublished = BoolEnum.NO;
+		outbox.jobStatus = JobStatusEnum.PENDING;
+		outbox.lockedBy = null;
+		outbox.lockedAt = null;
+		const updateDbResult = await updateOutboxDbService.handleAsync(outbox, queryRunner);
+		if (updateDbResult.isErr()) {
+			return ResultFactory.error(
+				updateDbResult.error.statusCode,
+				updateDbResult.error.message
+			);
+		}
 
-
-  private async reverseOutboxAsync(outbox:OutboxEntity, updateOutboxDbService: UpdateOutboxDbService, queryRunner: QueryRunner) {
-    // Reverse Outbox
-    outbox.isPublished = BoolEnum.NO;
-    outbox.jobStatus = JobStatusEnum.PENDING;
-    outbox.lockedBy = null;
-    outbox.lockedAt = null;
-    const updateDbResult = await updateOutboxDbService.handleAsync(outbox, queryRunner);
-    if (updateDbResult.isErr()) {
-      return ResultFactory.error(updateDbResult.error.statusCode, updateDbResult.error.message);
-    }
-
-    return ResultFactory.success(VOID_RESULT);
-  }
-
+		return ResultFactory.success(VOID_RESULT);
+	}
 
 	public async handleAsync(
 		params: IPublishWelcomeUserEmailEventServiceParameters
@@ -64,7 +74,7 @@ export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserE
 				producer,
 				outbox,
 				queryRunner,
-				services: { updateOutboxDbService,updateEmailService },
+				services: { updateOutboxDbService, updateEmailService },
 				queueName,
 			} = params;
 
@@ -75,21 +85,21 @@ export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserE
 				.check(queryRunner, 'queryRunner')
 				.check(updateOutboxDbService, 'updateOutboxDbService')
 				.check(queueName, 'queueName')
-        .check(updateEmailService, 'updateEmailService')
+				.check(updateEmailService, 'updateEmailService')
 				.validate();
 			if (guardResult.isErr()) {
 				return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
 			}
 
 			// Parse User Data
-			const userData:UserEntity = JSON.parse(outbox.payload);
+			const userData: UserEntity = JSON.parse(outbox.payload);
 
-      // Payload
-      const payload = {
-        email: userData.userCommunication.email,
-        fullName: `${userData.firstName} ${userData.lastName}`,
-        emailVerificationToken: userData.userSettings.emailVerificationToken
-      };
+			// Payload
+			const payload = {
+				email: userData.userCommunication.email,
+				fullName: `${userData.firstName} ${userData.lastName}`,
+				emailVerificationToken: userData.userSettings.emailVerificationToken,
+			};
 
 			// Generate Message
 			const message: RequestReplyMessageBullMq<JsonString> = {
@@ -106,19 +116,22 @@ export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserE
 			>(`JOB:${queueName}`, message);
 
 			if (!messageResult.success) {
-        await this.reverseOutboxAsync(outbox, updateOutboxDbService, queryRunner);
+				await this.reverseOutboxAsync(outbox, updateOutboxDbService, queryRunner);
 				return ResultFactory.error(messageResult.statusCode, messageResult.message);
 			}
 
-       // Update Email Status
-      const updateEmailStatusResult = await updateEmailService.handleAsync({
-        user:userData,
-        queryRunner:queryRunner
-      });
-      if(updateEmailStatusResult.isErr()){
-        await this.reverseOutboxAsync(outbox, updateOutboxDbService, queryRunner);
-        return ResultFactory.error(updateEmailStatusResult.error.statusCode,updateEmailStatusResult.error.message);
-      }
+			// Update Email Status
+			const updateEmailStatusResult = await updateEmailService.handleAsync({
+				user: userData,
+				queryRunner: queryRunner,
+			});
+			if (updateEmailStatusResult.isErr()) {
+				await this.reverseOutboxAsync(outbox, updateOutboxDbService, queryRunner);
+				return ResultFactory.error(
+					updateEmailStatusResult.error.statusCode,
+					updateEmailStatusResult.error.message
+				);
+			}
 
 			// OutBox Update
 			outbox.isPublished = BoolEnum.YES;
