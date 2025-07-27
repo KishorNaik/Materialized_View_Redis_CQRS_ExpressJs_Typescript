@@ -1,5 +1,5 @@
 import Enumerable from 'linq';
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt';
 export * from 'typeorm';
 export * from 'neverthrow';
 export * from 'typedi';
@@ -20,4 +20,4 @@ export {
 	pipelineBehavior,
 } from 'mediatr-ts';
 export { CronJob } from 'cron';
-export { Enumerable,bcrypt };
+export { Enumerable, bcrypt };

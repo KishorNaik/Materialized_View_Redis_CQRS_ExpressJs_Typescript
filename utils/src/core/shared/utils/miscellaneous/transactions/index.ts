@@ -45,38 +45,32 @@ export namespace TransactionsWrapper {
 		}
 	};
 
-  export interface ITransactionResultOptions<TResponse> {
+	export interface ITransactionResultOptions<TResponse> {
 		queryRunner: QueryRunner;
-		onTransaction: () => Promise<Result<TResponse,ResultError>>;
+		onTransaction: () => Promise<Result<TResponse, ResultError>>;
 	}
 
 	export const runResultAsync = async <TResponse>(
 		params: ITransactionResultOptions<TResponse>
-	): Promise<Result<TResponse,ResultError>> => {
+	): Promise<Result<TResponse, ResultError>> => {
 		if (!params)
-			return ResultFactory.error(
-				StatusCodes.BAD_REQUEST,
-				`transaction params is required`
-			);
+			return ResultFactory.error(StatusCodes.BAD_REQUEST, `transaction params is required`);
 
 		if (!params.queryRunner)
 			return ResultFactory.error(StatusCodes.BAD_REQUEST, `queryRunner is required`);
 
 		if (!params.onTransaction)
-			return ResultFactory.error(
-				StatusCodes.BAD_REQUEST,
-				`onTransaction body is required`
-			);
+			return ResultFactory.error(StatusCodes.BAD_REQUEST, `onTransaction body is required`);
 
 		const { queryRunner, onTransaction } = params;
 
 		try {
 			await queryRunner.startTransaction();
 			const response = await onTransaction();
-      if(response.isErr()){
-        await queryRunner.rollbackTransaction();
-        return response;
-      }
+			if (response.isErr()) {
+				await queryRunner.rollbackTransaction();
+				return response;
+			}
 
 			await queryRunner.commitTransaction();
 
@@ -84,12 +78,12 @@ export namespace TransactionsWrapper {
 		} catch (ex) {
 			const error = ex as Error;
 			await queryRunner.rollbackTransaction();
-      return ResultFactory.error<TResponse>(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        error.message,
-        undefined,
-        error.stack
-      );
+			return ResultFactory.error<TResponse>(
+				StatusCodes.INTERNAL_SERVER_ERROR,
+				error.message,
+				undefined,
+				error.stack
+			);
 		} finally {
 			await queryRunner.release();
 		}

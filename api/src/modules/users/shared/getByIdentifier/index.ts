@@ -13,29 +13,20 @@ import {
   TransactionsWrapper,
   GuardWrapper,
   ResultFactory,
+  IServiceHandlerAsync,
+  Result,
+  ResultError,
+  Service,
+  ExceptionsWrapper,
 } from '@kishornaik/utils';
-import { getQueryRunner, UserEntity } from '@kishornaik/db';
-import { GetUserByIdentifierRequestDto, GetUserByIdentifierResponseDto } from '../../contracts';
+import { getQueryRunner, UserEntity,QueryRunner } from '@kishornaik/db';
+import { GetUserByIdentifierRequestDto, GetUserByIdentifierResponseDto } from '../../apps/features/v1/getUserByIdentifier/contracts';
 import { logger } from '@/shared/utils/helpers/loggers';
 import { GetUserByValidationService } from './services/validations';
 import { GetUserByIdentifierMapEntityService } from './services/mapEntity';
-import { GetUserByIdentifierCacheService } from './services/cache';
+import { GetUserByIdentifierCacheService } from '../cache/set/services/byIdentifier';
 import { NODE_ENV } from '@/config/env';
-import { GetUserByIdentifierResponseMapService } from './services/mapResponse';
-// #region Query
-@sealed
-export class GetUserByIdentifierWrapperQuery extends RequestData<DataResponse<GetUserByIdentifierResponseDto>>{
-  private readonly _request: GetUserByIdentifierRequestDto
-  public constructor(request: GetUserByIdentifierRequestDto) {
-    super();
-    this._request = request;
-  }
 
-  public get request(): GetUserByIdentifierRequestDto {
-    return this._request;
-  }
-}
-//#endregion
 
 enum pipelineSteps{
   ValidationService="ValidationService",
@@ -44,40 +35,39 @@ enum pipelineSteps{
   MapResponseService="MapResponseService"
 }
 
+export interface IGetUserByIdentifierWrapperQueryServiceParameters{
+  request:GetUserByIdentifierRequestDto;
+  queryRunner:QueryRunner;
+}
+
+export interface IGetUserByIdentifierWrapperQueryService extends IServiceHandlerAsync<IGetUserByIdentifierWrapperQueryServiceParameters,UserEntity>{}
+
 // #region Query Handler
 @sealed
-@requestHandler(GetUserByIdentifierWrapperQuery)
-export class GetUserByIdentifierWrapperQueryHandler implements RequestHandler<GetUserByIdentifierWrapperQuery,DataResponse<GetUserByIdentifierResponseDto>>{
+@Service()
+export class GetUserByIdentifierWrapperQueryService implements IGetUserByIdentifierWrapperQueryService{
 
   private pipeline=new PipelineWorkflow(logger);
   private readonly _getUserByValidationService:GetUserByValidationService;
   private readonly _getUserByIdentifierMapEntityService:GetUserByIdentifierMapEntityService;
   private readonly _getUserByIdentifierCacheService:GetUserByIdentifierCacheService;
-  private readonly _getUserByIdentifierResponseMapService:GetUserByIdentifierResponseMapService;
 
   public constructor(){
     this._getUserByValidationService=Container.get(GetUserByValidationService);
     this._getUserByIdentifierMapEntityService=Container.get(GetUserByIdentifierMapEntityService);
     this._getUserByIdentifierCacheService=Container.get(GetUserByIdentifierCacheService);
-    this._getUserByIdentifierResponseMapService=Container.get(GetUserByIdentifierResponseMapService);
   }
-
-  public async handle(value: GetUserByIdentifierWrapperQuery): Promise<DataResponse<GetUserByIdentifierResponseDto>> {
-    const queryRunner = getQueryRunner();
-		await queryRunner.connect();
-    return await TransactionsWrapper.runDataResponseAsync({
-      queryRunner:queryRunner,
-      onTransaction:async ()=>{
-
-        const {request}=value;
+  public handleAsync(params: IGetUserByIdentifierWrapperQueryServiceParameters): Promise<Result<UserEntity, ResultError>> {
+    return ExceptionsWrapper.tryCatchResultAsync(async ()=>{
+       const {request,queryRunner}=params;
 
         // Guard
         const guardResult = new GuardWrapper()
-          .check(value, 'value')
+          .check(params, 'params')
           .check(request, 'request')
           .validate();
         if (guardResult.isErr())
-          return DataResponseFactory.error(
+          return ResultFactory.error<UserEntity>(
             guardResult.error.statusCode,
             guardResult.error.message
           );
@@ -101,39 +91,32 @@ export class GetUserByIdentifierWrapperQueryHandler implements RequestHandler<Ge
         await this.pipeline.step(pipelineSteps.CacheService,async ()=>{
 
           // Get Map Entity Result
-          const mapResult=this.pipeline.getResult<UserEntity>(pipelineSteps.MapEntityService);
+          const userMapResult=this.pipeline.getResult<UserEntity>(pipelineSteps.MapEntityService);
 
           const cacheResult=await this._getUserByIdentifierCacheService.handleAsync({
             env:NODE_ENV!,
-            key:`user-${mapResult.identifier}`,
+            key:`user-${userMapResult.identifier}`,
             setParams:{
               queryRunner:queryRunner,
-              user:mapResult
+              user:{
+                identifier:userMapResult.identifier,
+                status:userMapResult.status
+              }
             }
           });
 
           if(cacheResult.isErr()){
             if(cacheResult.error.fallbackObject)
-              return ResultFactory.success(cacheResult.error.fallbackObject as UserEntity);
-            return ResultFactory.error(cacheResult.error.statusCode,cacheResult.error.message);
+              return ResultFactory.success<UserEntity>(cacheResult.error.fallbackObject as UserEntity);
+            return ResultFactory.error<UserEntity>(cacheResult.error.statusCode,cacheResult.error.message);
           }
-          return ResultFactory.success(cacheResult.value);
-        })
-
-
-        // Map Response
-        await this.pipeline.step(pipelineSteps.MapResponseService,async ()=>{
-          const cacheResult=this.pipeline.getResult<UserEntity>(pipelineSteps.CacheService);
-          return await this._getUserByIdentifierResponseMapService.handleAsync(cacheResult);
+          return ResultFactory.success<UserEntity>(cacheResult.value);
         });
 
-        // Return
-        const response=this.pipeline.getResult<GetUserByIdentifierResponseDto>(pipelineSteps.MapResponseService);
-        return DataResponseFactory.success(StatusCodes.OK,response);
-
-      }
-    })
-  }
-
+        // Get User Entity
+        const cacheResult=this.pipeline.getResult<UserEntity>(pipelineSteps.CacheService);
+        return ResultFactory.success(cacheResult);
+      });
+    };
 }
 //#endregion

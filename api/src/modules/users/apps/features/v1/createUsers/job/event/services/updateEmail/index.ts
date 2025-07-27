@@ -1,4 +1,4 @@
-import { UpdateUserRowVersionService } from '@/modules/users/shared/updateRowVersion';
+import { UpdateUserRowVersionService } from '@/modules/users/shared/updateUserRowVersion';
 import {
 	QueryRunner,
 	UpdateUsersDbService,

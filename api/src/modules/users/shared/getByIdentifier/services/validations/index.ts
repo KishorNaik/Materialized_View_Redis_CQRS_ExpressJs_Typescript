@@ -1,5 +1,5 @@
 import { DtoValidation, sealed, Service } from "@kishornaik/utils";
-import { GetUserByIdentifierRequestDto } from "../../../../contracts";
+import { GetUserByIdentifierRequestDto } from "../../../../apps/features/v1/getUserByIdentifier/contracts";
 
 @sealed
 @Service()

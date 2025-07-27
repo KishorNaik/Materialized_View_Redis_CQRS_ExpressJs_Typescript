@@ -7,7 +7,10 @@ Container.set<GetUserByIdentifierDbService>(GetUserByIdentifierDbService,new Get
 
 export interface IGetUserByIdentifierCacheServiceParameters {
   queryRunner:QueryRunner;
-  user:UserEntity;
+  user:{
+    identifier: string;
+    status: StatusEnum;
+  }
 }
 
 @sealed
@@ -38,9 +41,14 @@ export class GetUserByIdentifierCacheService extends RedisStoreWrapper<IGetUserB
       if (guardResult.isErr())
         return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
 
+      // Map
+      const userEntity=new UserEntity();
+      userEntity.identifier=user.identifier;
+      userEntity.status=user.status;
+
       const userEntityResult=await this._getUserByIdentifierDbService.handleAsync({
         queryRunner:queryRunner,
-        userEntity:user
+        userEntity:userEntity
       });
       if(userEntityResult.isErr())
         return ResultFactory.error(userEntityResult.error.statusCode,userEntityResult.error.message);
@@ -63,7 +71,12 @@ export class GetUserByIdentifierCacheService extends RedisStoreWrapper<IGetUserB
       if (guardResult.isErr())
         return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
 
-      const rowVersionResult=await this._getUserRowVersionDbService.handleAsync(user,queryRunner);
+      // Map
+      const userEntity=new UserEntity();
+      userEntity.identifier=user.identifier;
+      userEntity.status=user.status;
+
+      const rowVersionResult=await this._getUserRowVersionDbService.handleAsync(userEntity,queryRunner);
       if(rowVersionResult.isErr())
         return ResultFactory.error(rowVersionResult.error.statusCode,rowVersionResult.error.message);
 

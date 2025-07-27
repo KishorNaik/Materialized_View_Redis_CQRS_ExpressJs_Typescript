@@ -1,6 +1,6 @@
 import { UserEntity } from "@kishornaik/db";
 import { ExceptionsWrapper, GuardWrapper, IServiceHandlerAsync, Result, ResultError, ResultFactory, sealed, Service } from "@kishornaik/utils";
-import { GetUserByIdentifierResponseDto } from "../../../../contracts";
+import { GetUserByIdentifierResponseDto } from "../../../contracts";
 
 export  interface IGetUserByIdentifierResponseMapService extends IServiceHandlerAsync<UserEntity,GetUserByIdentifierResponseDto>{}
 

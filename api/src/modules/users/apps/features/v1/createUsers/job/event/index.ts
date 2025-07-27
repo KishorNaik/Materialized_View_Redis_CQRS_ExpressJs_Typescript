@@ -143,21 +143,3 @@ export class SendWelcomeUserIntegrationEventService
 		return ResultFactory.success(VOID_RESULT);
 	}
 }
-
-/*
-
-// Send Integration Event BatchWise
-				await this._outboxBatchService.handleAsync({
-					outboxList: outboxList,
-					services: {
-						publishWelcomeUserEmailIntegrationEvent:
-							this._publishWelcomeUserEmailEventService,
-						updateOutboxDbService: this._updateOutboxDbService,
-            updateEmailService: this._updateEmailService
-					},
-					producer: producer,
-					queryRunner: queryRunner,
-					queueName: queueName,
-				});
-
-*/
