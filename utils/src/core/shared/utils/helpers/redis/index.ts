@@ -236,7 +236,7 @@ export abstract class RedisStoreWrapper<TParams extends object, TResult extends 
 			const { env, key, setParams } = params;
 
 			// init Redis Cache
-			await this._redisHelper.init(env === 'dev' ? true : false);
+			await this._redisHelper.init(env === 'development' ? true : false);
 			const cacheValueResult = await redisCacheCircuitBreaker.fire(this._redisHelper, key);
 			this._logger.info(`RedisStoreWrapper: Redis init`);
 

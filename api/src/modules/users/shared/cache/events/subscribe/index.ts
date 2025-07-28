@@ -8,6 +8,8 @@ const consumer = new SenderReceiverConsumerBullMq(bullMqRedisConnection);
 
 export const subscribeUserSharedCacheDomainEvent:WorkerBullMq=async()=>{
 
+  logger.info(`User Shared Cache Subscribe Worker Starting...`);
+
   const worker=await consumer.startConsumingAsync<JsonString>(queueName,async (message)=>{
     const { data, correlationId, timestamp, traceId } = message.data;
 			logger.info(

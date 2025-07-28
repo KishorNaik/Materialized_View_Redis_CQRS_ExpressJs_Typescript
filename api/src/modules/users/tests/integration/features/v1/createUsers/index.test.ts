@@ -23,11 +23,11 @@ describe(`Create_User_Module_Integration_Tests`, () => {
 		await initializeDatabase();
 
 		const requestDto: CreateUserRequestDto = new CreateUserRequestDto();
-		requestDto.firstName ='macdonald';
+		requestDto.firstName ='jelly';
 		requestDto.lastName = 'Doe';
-		requestDto.email = `macdonald.doe@example.com`;
+		requestDto.email = `jelly.doe@example.com`;
 		requestDto.password = 'password0123';
-		requestDto.mobileNo = '9111111136';
+		requestDto.mobileNo = '9111111139';
 
 		const aes = new AES(ENCRYPTION_KEY);
 		const encryptRequestBody = await aes.encryptAsync(JSON.stringify(requestDto));
