@@ -18,7 +18,7 @@ type TRPCAppRouter = typeof trpcModulesFederation;
 
 // Workers
 const cronJobWorkerModules: WorkerCronJob[] = [...userCronJobModules];
-const bullMqWorkerModules: WorkerBullMq[] = [...notificationBullMqModules,...userBullMqModules];
+const bullMqWorkerModules: WorkerBullMq[] = [...notificationBullMqModules, ...userBullMqModules];
 const pusherWorkerModules: WorkerPusher[] = [];
 const rabbitMqWorkerModules: WorkerRabbitMq[] = [];
 const kafkaWorkerModules: WorkerKafka[] = [];

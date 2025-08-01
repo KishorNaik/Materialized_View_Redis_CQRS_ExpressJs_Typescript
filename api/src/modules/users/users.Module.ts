@@ -5,6 +5,6 @@ import { subscribeUserSharedCacheDomainEvent } from './shared/cache/events/subsc
 
 const userModules: Function[] = [CreateUserEndpoint];
 const userCronJobModules: WorkerCronJob[] = [publishWelcomeUserEmailIntegrationEventJob];
-const userBullMqModules:WorkerBullMq[]=[subscribeUserSharedCacheDomainEvent];
+const userBullMqModules: WorkerBullMq[] = [subscribeUserSharedCacheDomainEvent];
 
-export { userModules, userCronJobModules,userBullMqModules };
+export { userModules, userCronJobModules, userBullMqModules };

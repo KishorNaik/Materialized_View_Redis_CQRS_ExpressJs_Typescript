@@ -6,7 +6,7 @@ export namespace FireAndForgetWrapper {
 	export interface IJobAsync {
 		onRun: () => Promise<void>;
 		onError: (err: Error) => void;
-    onCleanup:()=>Promise<void>
+		onCleanup: () => Promise<void>;
 	}
 
 	export const JobAsync = (params: IJobAsync) => {
@@ -15,9 +15,9 @@ export namespace FireAndForgetWrapper {
 			onRun().catch((err) => {
 				if (onError) onError(err);
 			});
-      onCleanup().catch((err) => {
-        if (onError) onError(err);
-      });
+			onCleanup().catch((err) => {
+				if (onError) onError(err);
+			});
 		});
 	};
 }

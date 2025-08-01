@@ -23,5 +23,5 @@ export * from './infrastructures/entity/tSettings/index';
 export * from './apps/features/v1/addUsers/index';
 export * from './apps/features/v1/getUserByIdentifier/index';
 export * from './apps/features/v1/getUserRowVersion/index';
-export * from "./apps/features/v1/updateRowVersion/index";
-export * from "./apps/features/v1/updateUsers/index";
+export * from './apps/features/v1/updateRowVersion/index';
+export * from './apps/features/v1/updateUsers/index';

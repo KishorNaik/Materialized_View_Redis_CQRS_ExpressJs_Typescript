@@ -41,4 +41,4 @@ export * from '../../shared/utils/miscellaneous/batchArray/index';
 export * from '../../shared/utils/miscellaneous/retry/index';
 export * from '../../shared/utils/miscellaneous/transactions/index';
 export * from '../../shared/utils/miscellaneous/guard/index';
-export * from "../../shared/utils/miscellaneous/cleanUp/index";
+export * from '../../shared/utils/miscellaneous/cleanUp/index';

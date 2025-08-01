@@ -18,7 +18,7 @@ import {
 	IAesEncryptResult,
 	FireAndForgetWrapper,
 	ResultFactory,
-  delay,
+	delay,
 } from '@kishornaik/utils';
 import { getTraceId, logger } from '@/shared/utils/helpers/loggers';
 import { AddOutboxDbService, getQueryRunner } from '@kishornaik/db';
@@ -86,7 +86,7 @@ export class CreateUserCommandHandler
 	private readonly _createUserMapResponseService: CreateUserMapResponseService;
 	private readonly _createUserEncryptService: CreateUserEncryptResponseService;
 	private readonly _createOutboxDbService: CreateOutboxDbService;
-  private readonly _publishUserSharedCacheDomainEventService:PublishUserSharedCacheDomainEventService;
+	private readonly _publishUserSharedCacheDomainEventService: PublishUserSharedCacheDomainEventService;
 
 	public constructor() {
 		this._createUserDecryptService = Container.get(CreateUserDecryptService);
@@ -100,14 +100,16 @@ export class CreateUserCommandHandler
 		this._createUserMapResponseService = Container.get(CreateUserMapResponseService);
 		this._createUserEncryptService = Container.get(CreateUserEncryptResponseService);
 		this._createOutboxDbService = Container.get(CreateOutboxDbService);
-    this._publishUserSharedCacheDomainEventService=Container.get(PublishUserSharedCacheDomainEventService);
+		this._publishUserSharedCacheDomainEventService = Container.get(
+			PublishUserSharedCacheDomainEventService
+		);
 	}
 
 	public async handle(value: CreateUserCommand): Promise<DataResponse<AesResponseDto>> {
 		const queryRunner = getQueryRunner();
 		await queryRunner.connect();
 
-		var response= await TransactionsWrapper.runDataResponseAsync({
+		var response = await TransactionsWrapper.runDataResponseAsync({
 			queryRunner: queryRunner,
 			onTransaction: async () => {
 				const { request } = value;
@@ -249,42 +251,40 @@ export class CreateUserCommandHandler
 			},
 		});
 
-    if(response.Success){
-      FireAndForgetWrapper.JobAsync({
-        onRun: async () => {
+		if (response.Success) {
+			FireAndForgetWrapper.JobAsync({
+				onRun: async () => {
+					logger.info(`create user fire and forget start`);
 
-          logger.info(`create user fire and forget start`);
+					// Get User Entity Data
+					const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
+						pipelineSteps.MapEntityService
+					);
+					const users = entityResult.entity.users;
 
-          // Get User Entity Data
-          const entityResult = this.pipeline.getResult<ICreateUserMapEntityServiceResult>(
-              pipelineSteps.MapEntityService
-          );
-          const users = entityResult.entity.users;
+					// Get traceId
+					const traceId = getTraceId();
+					logger.info(`create user fire and forget traceId: ${traceId}`);
 
-          // Get traceId
-          const traceId = getTraceId();
-          logger.info(`create user fire and forget traceId: ${traceId}`);
+					// Publish Shared Service
+					await this._publishUserSharedCacheDomainEventService.handleAsync({
+						identifier: users.identifier,
+						status: users.status,
+						traceId: traceId,
+					});
+				},
+				onError: (ex: Error) => {
+					logger.error(`create user fire and forget error ${ex.message}`);
+				},
+				onCleanup: async () => {
+					// Cleanup
+					this.pipeline = null;
+					logger.info(`create user fire and forget cleanup with end`);
+				},
+			});
+		}
 
-          // Publish Shared Service
-          await this._publishUserSharedCacheDomainEventService.handleAsync({
-            identifier: users.identifier,
-            status: users.status,
-            traceId: traceId
-          });
-
-        },
-        onError:(ex:Error)=>{
-          logger.error(`create user fire and forget error ${ex.message}`);
-        },
-        onCleanup: async ()=>{
-          // Cleanup
-          this.pipeline=null;
-          logger.info(`create user fire and forget cleanup with end`);
-        }
-      });
-    }
-
-    return response;
+		return response;
 	}
 }
 // #endregion

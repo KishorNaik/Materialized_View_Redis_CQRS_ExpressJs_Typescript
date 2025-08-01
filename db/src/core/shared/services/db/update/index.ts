@@ -40,7 +40,7 @@ export class UpdateService<T extends object> implements IUpdateService<T, T> {
 			if ('status' in (params as any) === false)
 				return new Err(new ResultError(StatusCodes.BAD_REQUEST, 'Status is required'));
 
-      console.log(`params validation: ${JSON.stringify(params)}`);
+			console.log(`params validation: ${JSON.stringify(params)}`);
 
 			// Validate Entity
 			const validationResult = await this.dtoValidation.handleAsync({

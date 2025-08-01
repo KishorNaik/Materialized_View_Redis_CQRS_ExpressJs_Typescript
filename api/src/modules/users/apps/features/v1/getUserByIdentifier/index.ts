@@ -1,3 +1,2 @@
-export * from "./contracts/index";
-export * from "../../../../shared/getByIdentifier/index";
-
+export * from './contracts/index';
+export * from './endpoint/index';

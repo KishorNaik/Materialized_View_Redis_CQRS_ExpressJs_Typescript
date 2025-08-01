@@ -34,7 +34,7 @@ const connectionOptions: DataSourceOptions = {
 		UserCredentialsEntity,
 		UserKeysEntity,
 		UsersSettingsEntity,
-    OutboxEntity
+		OutboxEntity,
 	],
 	subscribers: [],
 	migrations: ['src/core/config/dbMigrations/migrations/**/*.ts'],

@@ -23,7 +23,7 @@ describe(`Create_User_Module_Integration_Tests`, () => {
 		await initializeDatabase();
 
 		const requestDto: CreateUserRequestDto = new CreateUserRequestDto();
-		requestDto.firstName ='jelly';
+		requestDto.firstName = 'jelly';
 		requestDto.lastName = 'Doe';
 		requestDto.email = `jelly.doe@example.com`;
 		requestDto.password = 'password0123';

@@ -9,16 +9,15 @@ import { GetUserByIdentifierRequestDto } from '../contracts';
 @JsonController('/api/v1/users')
 @OpenAPI({ tags: ['users'] })
 export class GetUserByIdentifierEndpoint {
-  @Get('/:identifier')
-  @HttpCode(HttpStatusCode.Ok)
-  @OnUndefined(HttpStatusCode.BadRequest)
-  @OnUndefined(HttpStatusCode.NotFound)
-  async getAsync(@Param('identifier') identifier: string, @Res() res: Response) {
+	@Get('/:identifier')
+	@HttpCode(HttpStatusCode.Ok)
+	@OnUndefined(HttpStatusCode.BadRequest)
+	@OnUndefined(HttpStatusCode.NotFound)
+	async getAsync(@Param('identifier') identifier: string, @Res() res: Response) {
+		const request = new GetUserByIdentifierRequestDto();
+		request.id = identifier;
 
-    const request=new GetUserByIdentifierRequestDto();
-    request.id=identifier;
-
-    const response = await mediator.send(new GetUserByIdentifierQuery(request));
-    return res.status(response.StatusCode).json(response);
-  }
+		const response = await mediator.send(new GetUserByIdentifierQuery(request));
+		return res.status(response.StatusCode).json(response);
+	}
 }

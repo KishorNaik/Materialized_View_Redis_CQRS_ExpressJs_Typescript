@@ -10,9 +10,9 @@ import { UpdateService } from '../../../../../../shared/services/db/update';
 @sealed
 @Service()
 export class UpdateUsersDbService extends UpdateService<UserEntity> {
-  public constructor() {
-    super(UserEntity);
-  }
+	public constructor() {
+		super(UserEntity);
+	}
 }
 
 //#endregion
@@ -21,9 +21,9 @@ export class UpdateUsersDbService extends UpdateService<UserEntity> {
 @sealed
 @Service()
 export class UpdateUserCommunicationDbService extends UpdateService<UserCommunicationEntity> {
-  public constructor() {
-    super(UserCommunicationEntity);
-  }
+	public constructor() {
+		super(UserCommunicationEntity);
+	}
 }
 //#region
 
@@ -31,9 +31,9 @@ export class UpdateUserCommunicationDbService extends UpdateService<UserCommunic
 @sealed
 @Service()
 export class UpdateUserCredentialsDbService extends UpdateService<UserCredentialsEntity> {
-  public constructor() {
-    super(UserCredentialsEntity);
-  }
+	public constructor() {
+		super(UserCredentialsEntity);
+	}
 }
 // #endregion
 
@@ -41,9 +41,9 @@ export class UpdateUserCredentialsDbService extends UpdateService<UserCredential
 @sealed
 @Service()
 export class UpdateUserKeysDbService extends UpdateService<UserKeysEntity> {
-  public constructor() {
-    super(UserKeysEntity);
-  }
+	public constructor() {
+		super(UserKeysEntity);
+	}
 }
 // #endregion
 
@@ -51,8 +51,8 @@ export class UpdateUserKeysDbService extends UpdateService<UserKeysEntity> {
 @sealed
 @Service()
 export class UpdateUserSettingsDbService extends UpdateService<UsersSettingsEntity> {
-  public constructor() {
-    super(UsersSettingsEntity);
-  }
+	public constructor() {
+		super(UsersSettingsEntity);
+	}
 }
 // #endregion

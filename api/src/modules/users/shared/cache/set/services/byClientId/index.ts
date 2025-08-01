@@ -1,3 +1,5 @@
+import { logger } from '@/shared/utils/helpers/loggers';
+import { GetUserRowVersionDbService, QueryRunner, UserEntity } from '@kishornaik/db';
 import {
 	Container,
 	ExceptionsWrapper,
@@ -12,83 +14,54 @@ import {
 	Service,
 	StatusEnum,
 } from '@kishornaik/utils';
-import {
-	GetUserByIdentifierDbService,
-	GetUserRowVersionDbService,
-	QueryRunner,
-	UserEntity,
-} from '@kishornaik/db';
-import { logger } from '@/shared/utils/helpers/loggers';
 
 Container.set<GetUserRowVersionDbService>(
 	GetUserRowVersionDbService,
 	new GetUserRowVersionDbService()
 );
-Container.set<GetUserByIdentifierDbService>(
-	GetUserByIdentifierDbService,
-	new GetUserByIdentifierDbService()
-);
 
-export interface ISetUserByIdentifierCacheServiceParameters {
+export interface ISetUserByClientIdCacheServiceParameters {
 	queryRunner: QueryRunner;
 	user: {
 		identifier: string;
 		status: StatusEnum;
 	};
+	userData: UserEntity;
 }
 
 @sealed
 @Service()
-export class SetUserByIdentifierCacheService extends RedisStoreWrapper<
-	ISetUserByIdentifierCacheServiceParameters,
+export class SetUserByClientIdCacheService extends RedisStoreWrapper<
+	ISetUserByClientIdCacheServiceParameters,
 	UserEntity
 > {
-	private readonly _getUserByIdentifierDbService: GetUserByIdentifierDbService;
 	private readonly _getUserRowVersionDbService: GetUserRowVersionDbService;
 
 	public constructor() {
 		const redisHelper = new RedisHelper();
 		super(redisHelper, logger);
-
-		this._getUserByIdentifierDbService = Container.get(GetUserByIdentifierDbService);
 		this._getUserRowVersionDbService = Container.get(GetUserRowVersionDbService);
 	}
 
 	protected async setCacheDataAsync(
-		params: ISetUserByIdentifierCacheServiceParameters
+		params: ISetUserByClientIdCacheServiceParameters
 	): Promise<Result<UserEntity, ResultError>> {
-		return await ExceptionsWrapper.tryCatchResultAsync<UserEntity>(async () => {
-			const { queryRunner, user } = params;
+		return await ExceptionsWrapper.tryCatchResultAsync(async () => {
+			const { userData } = params;
 
 			// Guard
 			const guardResult = new GuardWrapper()
 				.check(params, 'params')
-				.check(user, 'user')
-				.check(queryRunner, 'queryRunner')
+				.check(userData, 'userData')
 				.validate();
 			if (guardResult.isErr())
 				return ResultFactory.error(guardResult.error.statusCode, guardResult.error.message);
 
-			// Map
-			const userEntity = new UserEntity();
-			userEntity.identifier = user.identifier;
-			userEntity.status = user.status;
-
-			const userEntityResult = await this._getUserByIdentifierDbService.handleAsync({
-				queryRunner: queryRunner,
-				userEntity: userEntity,
-			});
-			if (userEntityResult.isErr())
-				return ResultFactory.error(
-					userEntityResult.error.statusCode,
-					userEntityResult.error.message
-				);
-
-			return ResultFactory.success(userEntityResult.value);
+			return ResultFactory.success(userData);
 		});
 	}
 	protected async getRowVersionAsync(
-		params: ISetUserByIdentifierCacheServiceParameters
+		params: ISetUserByClientIdCacheServiceParameters
 	): Promise<Result<RowVersionNumber, ResultError>> {
 		return await ExceptionsWrapper.tryCatchResultAsync(async () => {
 			const { queryRunner, user } = params;

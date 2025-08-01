@@ -1,4 +1,4 @@
-import { BoolEnum, Column, Entity,IsSafeString } from '@kishornaik/utils';
+import { BoolEnum, Column, Entity, IsSafeString } from '@kishornaik/utils';
 import { BaseEntity } from '../../../../shared/entity/base';
 import { IsNotEmpty, IsString } from 'class-validator';
 
@@ -35,7 +35,7 @@ export class OutboxEntity extends BaseEntity {
 	@Column(`timestamp`, { nullable: true, default: () => 'CURRENT_TIMESTAMP' })
 	public lockedAt?: Date;
 
-  @Column(`varchar`, { length: 100, nullable: true })
-  @IsNotEmpty()
-  public traceId?: string
+	@Column(`varchar`, { length: 100, nullable: true })
+	@IsNotEmpty()
+	public traceId?: string;
 }
