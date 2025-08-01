@@ -36,6 +36,6 @@ export class UserEntity extends BaseEntity {
 	@OneToOne(() => UserKeysEntity, (userKeys) => userKeys.users)
 	public userKeys?: UserKeysEntity;
 
-	@OneToOne(() => UserKeysEntity, (userKeys) => userKeys.users)
+	@OneToOne(() => UsersSettingsEntity, (userSettings) => userSettings.users)
 	public userSettings?: UsersSettingsEntity;
 }

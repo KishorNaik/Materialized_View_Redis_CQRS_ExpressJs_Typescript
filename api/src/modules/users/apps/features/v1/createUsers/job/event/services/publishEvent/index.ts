@@ -24,11 +24,14 @@ import {
 	VOID_RESULT,
 	VoidResult,
 	GuardWrapper,
+  FireAndForgetWrapper,
 } from '@kishornaik/utils';
 import { randomUUID } from 'crypto';
 import { UpdateEmailService } from '../updateEmail';
+import { UserSharedCacheService } from '@/modules/users/shared/cache/set/index ';
+import { PublishUserSharedCacheDomainEventService } from '@/modules/users/shared/cache/events/publish';
 
-export interface IPublishWelcomeUserEmailEventServiceParameters {
+export interface IPublishWelcomeUserEmailIntegrationEventServiceParameters {
 	producer: RequestReplyProducerBullMq;
 	queueName: string;
 	services: {
@@ -39,12 +42,19 @@ export interface IPublishWelcomeUserEmailEventServiceParameters {
 	queryRunner: QueryRunner;
 }
 
-export interface IPublishWelcomeUserEmailEventService
-	extends IServiceHandlerVoidAsync<IPublishWelcomeUserEmailEventServiceParameters> {}
+export interface IPublishWelcomeUserEmailIntegrationEventService
+	extends IServiceHandlerVoidAsync<IPublishWelcomeUserEmailIntegrationEventServiceParameters> {}
 
 @sealed
 @Service()
-export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserEmailEventService {
+export class PublishWelcomeUserEmailIntegrationEventService implements IPublishWelcomeUserEmailIntegrationEventService {
+
+  private readonly _publishUserSharedCacheDomainEventService: PublishUserSharedCacheDomainEventService;
+
+  public constructor() {
+    this._publishUserSharedCacheDomainEventService = Container.get(PublishUserSharedCacheDomainEventService);
+  }
+
 	private async reverseOutboxAsync(
 		outbox: OutboxEntity,
 		updateOutboxDbService: UpdateOutboxDbService,
@@ -67,9 +77,9 @@ export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserE
 	}
 
 	public async handleAsync(
-		params: IPublishWelcomeUserEmailEventServiceParameters
+		params: IPublishWelcomeUserEmailIntegrationEventServiceParameters
 	): Promise<Result<VoidResult, ResultError>> {
-		return ExceptionsWrapper.tryCatchResultAsync(async () => {
+		var result =await ExceptionsWrapper.tryCatchResultAsync<{user:UserEntity; traceId: string}>(async () => {
 			const {
 				producer,
 				outbox,
@@ -142,7 +152,49 @@ export class PublishWelcomeUserEmailEventService implements IPublishWelcomeUserE
 			}
 			logger.info(`SendEmailEventService: ${messageResult.correlationId} is send`);
 
-			return ResultFactory.success(VOID_RESULT);
+			return ResultFactory.success({
+        user: userData,
+        traceId: outbox.traceId
+      });
 		});
+
+    if (result.isErr()) {
+      return ResultFactory.error(result.error.statusCode, result.error.message);
+    }
+
+    // Update User Shared Cache
+    FireAndForgetWrapper.JobAsync({
+            onRun: async () => {
+              logger.info(`Publish: Welcome User Email Integration Event Fire and Forgot => Update IsEmail Send User Cache Start`);
+
+
+              if(result.isErr()) {
+                logger.error(`Publish: Welcome User Email Integration Event Fire and Forgot => Update IsEmail Send User Cache. error ${result.error.message}`);
+                return;
+              }
+
+              // Get User Entity Data
+              const users = result.value.user;
+              const traceId = result.value.traceId;
+              logger.info(`Publish: Welcome User Email Integration Event Fire and Forgot => Update IsEmail Send User Cache. traceId: ${traceId}`);
+
+              // Publish Shared Service
+              await this._publishUserSharedCacheDomainEventService.handleAsync({
+                identifier: users.identifier,
+                status: users.status,
+                traceId: traceId,
+              });
+            },
+            onError: (ex: Error) => {
+              logger.error(`Publish: Welcome User Email Integration Event Fire and Forgot => Update IsEmail Send User Cache. error ${ex.message}`);
+            },
+            onCleanup: async () => {
+              // Cleanup
+              logger.info(`Publish: Welcome User Email Integration Event Fire and Forgot => Update IsEmail Send User Cache. cleanup with end`);
+            },
+          });
+
+
+    return ResultFactory.success(VOID_RESULT);
 	}
 }

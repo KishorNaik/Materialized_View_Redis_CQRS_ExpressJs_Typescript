@@ -13,14 +13,14 @@ import {
 	VOID_RESULT,
 	VoidResult,
 } from '@kishornaik/utils';
-import { PublishWelcomeUserEmailEventService } from '../publishEvent';
+import { PublishWelcomeUserEmailIntegrationEventService } from '../publishEvent';
 import { logger } from '@/shared/utils/helpers/loggers';
 import { UpdateEmailService } from '../updateEmail';
 
 export interface IOutboxBatchParameters {
 	outboxList: OutboxEntity[];
 	services: {
-		publishWelcomeUserEmailIntegrationEvent: PublishWelcomeUserEmailEventService;
+		publishWelcomeUserEmailIntegrationEvent: PublishWelcomeUserEmailIntegrationEventService;
 		updateOutboxDbService: UpdateOutboxDbService;
 		updateEmailService: UpdateEmailService;
 	};

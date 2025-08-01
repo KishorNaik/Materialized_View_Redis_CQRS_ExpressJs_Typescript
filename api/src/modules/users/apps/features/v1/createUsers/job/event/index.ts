@@ -26,7 +26,7 @@ import {
 } from '@kishornaik/utils';
 import { GetOutboxListService } from './services/getOutboxList';
 import { OutboxBatchService } from './services/batch';
-import { PublishWelcomeUserEmailEventService } from './services/publishEvent';
+import { PublishWelcomeUserEmailIntegrationEventService } from './services/publishEvent';
 import { UpdateEmailService } from './services/updateEmail';
 
 // Define Queue
@@ -49,7 +49,7 @@ export class SendWelcomeUserIntegrationEventService
 	private readonly _updateOutboxDbService: UpdateOutboxDbService;
 	private readonly _getOutboxListService: GetOutboxListService;
 	private readonly _outboxBatchService: OutboxBatchService;
-	private readonly _publishWelcomeUserEmailEventService: PublishWelcomeUserEmailEventService;
+	private readonly _publishWelcomeUserEmailEventService: PublishWelcomeUserEmailIntegrationEventService;
 	private readonly _updateEmailService: UpdateEmailService;
 
 	public constructor() {
@@ -58,7 +58,7 @@ export class SendWelcomeUserIntegrationEventService
 		this._getOutboxListService = Container.get(GetOutboxListService);
 		this._outboxBatchService = Container.get(OutboxBatchService);
 		this._publishWelcomeUserEmailEventService = Container.get(
-			PublishWelcomeUserEmailEventService
+			PublishWelcomeUserEmailIntegrationEventService
 		);
 		this._updateEmailService = Container.get(UpdateEmailService);
 	}
