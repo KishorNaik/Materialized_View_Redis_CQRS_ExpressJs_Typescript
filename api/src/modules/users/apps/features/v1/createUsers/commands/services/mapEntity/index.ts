@@ -68,18 +68,18 @@ export class CreateUserMapEntityService implements ICreateUserMapEntityService {
 			userEntity.clientId = randomUUID().toString();
 			userEntity.firstName = request.firstName;
 			userEntity.lastName = request.lastName;
-			userEntity.status = StatusEnum.INACTIVE;
+			userEntity.status = StatusEnum.ACTIVE;
 
 			const userCommunicationEntity = new UserCommunicationEntity();
 			userCommunicationEntity.identifier = randomUUID().toString();
-			userCommunicationEntity.status = StatusEnum.INACTIVE;
+			userCommunicationEntity.status = StatusEnum.ACTIVE;
 			userCommunicationEntity.email = request.email;
 			userCommunicationEntity.mobileNo = request.mobileNo;
 			userCommunicationEntity.userId = userEntity.identifier;
 
 			const userKeysEntity = new UserKeysEntity();
 			userKeysEntity.identifier = randomUUID().toString();
-			userKeysEntity.status = StatusEnum.INACTIVE;
+			userKeysEntity.status = StatusEnum.ACTIVE;
 			userKeysEntity.aesSecretKey = keys.aesSecretKey;
 			userKeysEntity.hmacSecretKey = keys.hmacSecretKey;
 			userKeysEntity.userId = userEntity.identifier;
@@ -93,12 +93,12 @@ export class CreateUserMapEntityService implements ICreateUserMapEntityService {
 				new Date().getTime() + 24 * 60 * 60 * 1000
 			);
 			userSettingsEntity.isEmailVerified = BoolEnum.NO;
-			userSettingsEntity.status = StatusEnum.INACTIVE;
+			userSettingsEntity.status = StatusEnum.ACTIVE;
 			userSettingsEntity.userId = userEntity.identifier;
 
 			const userCredentialsEntity = new UserCredentialsEntity();
 			userCredentialsEntity.identifier = randomUUID().toString();
-			userCredentialsEntity.status = StatusEnum.INACTIVE;
+			userCredentialsEntity.status = StatusEnum.ACTIVE;
 			userCredentialsEntity.hash = hashPassword.hash;
 			userCredentialsEntity.salt = hashPassword.salt;
 			userCredentialsEntity.userName = userCommunicationEntity.email;
