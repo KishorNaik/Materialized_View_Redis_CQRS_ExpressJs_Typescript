@@ -16,6 +16,7 @@ import {
 	AesResponseDto,
 	IAesEncryptResult,
 	StatusEnum,
+	CleanUpWrapper,
 } from '@kishornaik/utils';
 import { GetUserByIdentifierRequestDto, GetUserByIdentifierResponseDto } from '../contracts';
 import { logger } from '@/shared/utils/helpers/loggers';
@@ -83,7 +84,7 @@ export class GetUserByIdentifierQueryHandler
 		const queryRunner = getQueryRunner();
 		await queryRunner.connect();
 
-		return await TransactionsWrapper.runDataResponseAsync({
+		const response = await TransactionsWrapper.runDataResponseAsync({
 			queryRunner: queryRunner,
 			onTransaction: async () => {
 				const { request } = value;
@@ -183,6 +184,12 @@ export class GetUserByIdentifierQueryHandler
 				);
 			},
 		});
+
+		CleanUpWrapper.run(() => {
+			this.pipeline = null;
+		});
+
+		return response;
 	}
 }
 
