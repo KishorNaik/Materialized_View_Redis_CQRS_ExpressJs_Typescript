@@ -11,13 +11,20 @@ export namespace FireAndForgetWrapper {
 
 	export const JobAsync = (params: IJobAsync) => {
 		const { onRun, onError, onCleanup } = params;
-		setImmediate(() => {
-			onRun().catch((err) => {
-				if (onError) onError(err);
-			});
-			onCleanup().catch((err) => {
-				if (onError) onError(err);
-			});
-		});
+		setImmediate(async () => {
+      try {
+        await onRun();
+      } catch (err) {
+        const error = err as Error;
+        if (onError) onError(error);
+      } finally {
+        try {
+          await onCleanup();
+        } catch (err) {
+          const error = err as Error;
+          if (onError) onError(error);
+        }
+      }
+    });
 	};
 }
